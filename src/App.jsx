@@ -2,12 +2,22 @@ import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
+import gdcLogo from './assets/NOW GDC Primary Logo_Colour.jpg';
+
 
 function App() {
   const [count, setCount] = useState(0)
 
   return (
     <>
+    <header style={{ textAlign: 'center', marginBottom: '2rem' }}>
+  <img
+    src={gdcLogo}
+    alt="GDC Logo"
+    style={{ maxWidth: '280px', height: 'auto' }}
+  />
+</header>
+
       <div>
         <a href="https://vite.dev" target="_blank">
           <img src={viteLogo} className="logo" alt="Vite logo" />
