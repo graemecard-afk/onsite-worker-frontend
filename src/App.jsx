@@ -4,11 +4,17 @@ import viteLogo from '/vite.svg'
 import './App.css'
 import gdcLogo from './assets/NOW GDC Primary Logo_Colour.jpg';
 import LoginPage from './pages/LoginPage.jsx';
+import SelectSitePage from './pages/SelectSitePage.jsx';
 
 
 
 function App() {
   const [loggedIn, setLoggedIn] = useState(false);
+  const sites = [
+  { id: 'waiapu', name: 'Waiapu Landfill Site' },
+  { id: 'paokahu', name: 'Paokahu Landfill Site' },
+];
+
 
 
   return (
@@ -20,7 +26,14 @@ function App() {
     style={{ maxWidth: '280px', height: 'auto' }}
   />
 </header>
-{!loggedIn ? <LoginPage onLogin={() => setLoggedIn(true)} /> : <div style={{ textAlign: 'center' }}>Select Site (next step)</div>}
+{!loggedIn
+  ? <LoginPage onLogin={() => setLoggedIn(true)} />
+  : <SelectSitePage
+      sites={sites}
+      onSelectSite={(site) => alert(`Selected: ${site.name}`)}
+      onLogout={() => setLoggedIn(false)}
+    />
+}
 
    </>
      
