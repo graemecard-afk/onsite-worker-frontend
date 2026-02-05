@@ -17,28 +17,46 @@ function App() {
     style={{ maxWidth: '280px', height: 'auto' }}
   />
 </header>
+<main style={{ maxWidth: '360px', margin: '0 auto' }}>
+  <h2>Contractor Login</h2>
 
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+  <form>
+    <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+      Email
+      <input
+        type="email"
+        placeholder="name@example.com"
+        style={{ width: '100%', padding: '8px', marginTop: '4px' }}
+      />
+    </label>
+
+    <label style={{ display: 'block', marginBottom: '1rem' }}>
+      Password
+      <input
+        type="password"
+        placeholder="••••••••"
+        style={{ width: '100%', padding: '8px', marginTop: '4px' }}
+      />
+    </label>
+
+    <button
+      type="submit"
+      style={{
+        width: '100%',
+        padding: '10px',
+        background: '#005bab',
+        color: 'white',
+        border: 'none',
+        cursor: 'pointer',
+      }}
+    >
+      Log in
+    </button>
+  </form>
+</main>
+
+ </>
+     
   )
 }
 
