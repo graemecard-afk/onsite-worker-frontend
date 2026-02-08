@@ -6,6 +6,8 @@ import gdcLogo from './assets/NOW GDC Primary Logo_Colour.jpg';
 import LoginPage from './pages/LoginPage.jsx';
 import SelectSitePage from './pages/SelectSitePage.jsx';
 import ArrivePage from './pages/ArrivePage.jsx';
+import OnShiftPage from "./pages/OnShiftPages";
+
 
 
 
@@ -13,10 +15,14 @@ import ArrivePage from './pages/ArrivePage.jsx';
 function App() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [selectedSite, setSelectedSite] = useState(null);
+  const [shiftStartTime, setShiftStartTime] = useState("");
+const [currentView, setCurrentView] = useState("login");
+
 
   const sites = [
   { id: 'waiapu', name: 'Waiapu Landfill Site' },
   { id: 'paokahu', name: 'Paokahu Landfill Site' },
+  
 ];
 
 
