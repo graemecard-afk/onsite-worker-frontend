@@ -1,5 +1,6 @@
 // src/pages/OnShiftPage.jsx
-import React from "react";
+import React, { useEffect, useState } from "react";
+
 
 export default function OnShiftPage({
   theme,
@@ -8,6 +9,16 @@ export default function OnShiftPage({
    onSignOut,
 }) {
   const isDark = theme === "dark";
+  const [minutesOnSite, setMinutesOnSite] = useState(0);
+
+useEffect(() => {
+  const id = setInterval(() => {
+    setMinutesOnSite(m => m + 1);
+  }, 60000);
+
+  return () => clearInterval(id);
+}, []);
+
 
   const pageStyle = {
     minHeight: "100vh",
@@ -68,9 +79,12 @@ export default function OnShiftPage({
           {siteName ? siteName : "Unknown site"}
         </p>
 
-        <div style={subStyle}>
+                <div style={subStyle}>
           On site since{" "}
           <strong>{shiftStartTimeText ? shiftStartTimeText : "—"}</strong>
+          <div style={{ marginTop: 6 }}>
+            Minutes on site: <strong>{minutesOnSite}</strong>
+          </div>
         </div>
 
         <div style={boxStyle}>
@@ -79,6 +93,7 @@ export default function OnShiftPage({
             Breadcrumb capture every 5 minutes will appear here later.
           </div>
         </div>
+
                 <button
           type="button"
           style={{
