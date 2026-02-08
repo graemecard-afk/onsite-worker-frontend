@@ -78,6 +78,27 @@ export default function OnShiftPage({
             Breadcrumb capture every 5 minutes will appear here later.
           </div>
         </div>
+                <button
+          type="button"
+          style={{
+            marginTop: 20,
+            width: "100%",
+            padding: "14px 16px",
+            borderRadius: 12,
+            border: "none",
+            background: "#dc2626",
+            color: "white",
+            fontSize: 16,
+            fontWeight: 600,
+            cursor: "pointer",
+          }}
+          onClick={() => {
+            alert("Sign out coming next step");
+          }}
+        >
+          Sign out
+        </button>
+
       </div>
     </div>
   );
