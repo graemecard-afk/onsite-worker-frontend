@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from "react";
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
@@ -8,7 +8,35 @@ import SelectSitePage from './pages/SelectSitePage.jsx';
 import ArrivePage from './pages/ArrivePage.jsx';
 import OnShiftPage from "./pages/OnShiftPages";
 
+useEffect(() => {
+  try {
+    const raw = localStorage.getItem("onsiteWorkerSession");
+    if (!raw) return;
 
+    const s = JSON.parse(raw);
+
+    if (s?.loggedIn) setLoggedIn(true);
+    if (s?.selectedSite) setSelectedSite(s.selectedSite);
+    if (typeof s?.shiftStartTime === "string") setShiftStartTime(s.shiftStartTime);
+    if (typeof s?.currentView === "string") setCurrentView(s.currentView);
+  } catch {
+    // ignore bad storage
+  }
+}, []);
+
+useEffect(() => {
+  try {
+    const session = {
+      loggedIn,
+      selectedSite,
+      shiftStartTime,
+      currentView,
+    };
+    localStorage.setItem("onsiteWorkerSession", JSON.stringify(session));
+  } catch {
+    // ignore storage errors
+  }
+}, [loggedIn, selectedSite, shiftStartTime, currentView]);
 
 
 
@@ -63,6 +91,7 @@ const [currentView, setCurrentView] = useState("login");
     setShiftStartTime("");
     setCurrentView("selectSite");
     setSelectedSite(null);
+    localStorage.removeItem("onsiteWorkerSession");
   }}
 />
 
@@ -96,6 +125,7 @@ const [currentView, setCurrentView] = useState("login");
     onLogout={() => {
       setLoggedIn(false);
       setSelectedSite(null);
+      localStorage.removeItem("onsiteWorkerSession");
     }}
   />
 )}
