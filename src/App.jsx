@@ -43,29 +43,37 @@ const [currentView, setCurrentView] = useState("login");
       setSelectedSite(null);
     }}
   />
-) : selectedSite ? (
-  <ArrivePage
-    site={selectedSite}
-    onBack={() => setSelectedSite(null)}
-    onArrive={() => {
-  const now = new Date();
+): selectedSite ? (
+  currentView === "onShift" ? (
+    <OnShiftPage
+      siteName={selectedSite?.name}
+      shiftStartTimeText={shiftStartTime}
+    />
+  ) : (
+    <ArrivePage
+      site={selectedSite}
+      onBack={() => {
+        setSelectedSite(null);
+        setCurrentView("selectSite");
+      }}
+      onArrive={() => {
+        const now = new Date();
 
-  const formatted = now.toLocaleString('en-NZ', {
-    timeZone: 'Pacific/Auckland',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  });
+        const formatted = now.toLocaleString("en-NZ", {
+          timeZone: "Pacific/Auckland",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        });
 
-  alert(`Arrived at: ${selectedSite.name} at ${formatted}`);
-}}
-
-  />
+        setShiftStartTime(formatted);
+        setCurrentView("onShift");
+      }}
+    />
+  )
 ) : (
   <SelectSitePage
+
     sites={sites}
     onSelectSite={(site) => setSelectedSite(site)}
     onLogout={() => {
