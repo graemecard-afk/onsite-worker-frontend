@@ -16,6 +16,7 @@ function App() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [selectedSite, setSelectedSite] = useState(null);
   const [shiftStartTime, setShiftStartTime] = useState("");
+  const [shiftEndTime, setShiftEndTime] = useState("");
 const [currentView, setCurrentView] = useState("login");
 
 
@@ -46,9 +47,25 @@ const [currentView, setCurrentView] = useState("login");
 ): selectedSite ? (
   currentView === "onShift" ? (
     <OnShiftPage
-      siteName={selectedSite?.name}
-      shiftStartTimeText={shiftStartTime}
-    />
+  siteName={selectedSite?.name}
+  shiftStartTimeText={shiftStartTime}
+  onSignOut={() => {
+    const now = new Date();
+
+    const formatted = now.toLocaleString("en-NZ", {
+      timeZone: "Pacific/Auckland",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+
+    setShiftEndTime(formatted);
+    setShiftStartTime("");
+    setCurrentView("selectSite");
+    setSelectedSite(null);
+  }}
+/>
+
   ) : (
     <ArrivePage
       site={selectedSite}

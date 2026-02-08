@@ -5,6 +5,7 @@ export default function OnShiftPage({
   theme,
   siteName,
   shiftStartTimeText,
+   onSignOut,
 }) {
   const isDark = theme === "dark";
 
@@ -93,8 +94,9 @@ export default function OnShiftPage({
             cursor: "pointer",
           }}
           onClick={() => {
-            alert("Sign out coming next step");
-          }}
+  onSignOut?.();
+}}
+
         >
           Sign out
         </button>
