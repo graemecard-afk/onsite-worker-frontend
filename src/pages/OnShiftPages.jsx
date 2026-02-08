@@ -12,12 +12,29 @@ export default function OnShiftPage({
   const [minutesOnSite, setMinutesOnSite] = useState(0);
 
 useEffect(() => {
-  const id = setInterval(() => {
-    setMinutesOnSite(m => m + 1);
-  }, 60000);
+  if (!shiftStartTimeText) return;
 
+  const parseStart = () => {
+    const [hour, minute] = shiftStartTimeText.split(":").map(Number);
+    const d = new Date();
+    d.setHours(hour, minute, 0, 0);
+    return d;
+  };
+
+  const update = () => {
+    const start = parseStart();
+    const now = new Date();
+    const diffMs = now - start;
+    const mins = Math.max(0, Math.floor(diffMs / 60000));
+    setMinutesOnSite(mins);
+  };
+
+  update();
+
+  const id = setInterval(update, 30000);
   return () => clearInterval(id);
-}, []);
+}, [shiftStartTimeText]);
+
 
 
   const pageStyle = {
