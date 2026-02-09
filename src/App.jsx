@@ -153,6 +153,13 @@ if (currentView === "supervisor" && !isAdmin) {
     <SupervisorDashboardPage
       selectedSite={selectedSite}
       breadcrumbs={breadcrumbs}
+      onLogout={() => {
+  setLoggedIn(false);
+  setUserEmail("");
+  setSelectedSite(null);
+  setCurrentView("login");
+  localStorage.removeItem("onsiteWorkerSession");
+}}
     />
   ) : currentView === "onShift" ? (
     <OnShiftPage
