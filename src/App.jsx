@@ -132,6 +132,7 @@ useEffect(() => {
   setActiveTask={setActiveTask}
   completedTasks={completedTasks}
   setCompletedTasks={setCompletedTasks}
+  breadcrumbs={breadcrumbs}
   onSignOut={() => {
     const now = new Date();
 

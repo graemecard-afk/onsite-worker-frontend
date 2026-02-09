@@ -12,6 +12,7 @@ export default function OnShiftPage({
   setActiveTask,
   completedTasks,
   setCompletedTasks,
+  breadcrumbs,
 }) {
 
   const isDark = theme === "dark";
@@ -135,10 +136,28 @@ useEffect(() => {
         </div>
 
         <div style={boxStyle}>
-          <strong>GPS tracking (placeholder)</strong>
-          <div style={{ marginTop: 6, opacity: 0.85 }}>
-            Breadcrumb capture every 5 minutes will appear here later.
-          </div>
+          <strong>GPS tracking</strong>
+
+{breadcrumbs && breadcrumbs.length > 0 ? (
+  <div style={{ marginTop: 6, opacity: 0.85 }}>
+    Last point:
+    <div>
+      Lat: {breadcrumbs[breadcrumbs.length - 1].lat.toFixed(5)}, Lng:{' '}
+      {breadcrumbs[breadcrumbs.length - 1].lng.toFixed(5)}
+    </div>
+    <div>
+      At:{' '}
+      {new Date(
+        breadcrumbs[breadcrumbs.length - 1].at
+      ).toLocaleTimeString()}
+    </div>
+  </div>
+) : (
+  <div style={{ marginTop: 6, opacity: 0.85 }}>
+    No GPS points yet.
+  </div>
+)}
+
         </div>
 
         {/* TASKS (scaffold - frontend only) */}
