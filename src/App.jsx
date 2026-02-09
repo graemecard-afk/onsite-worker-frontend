@@ -141,7 +141,7 @@ if (currentView === "supervisor" && !isAdmin) {
 ) : !loggedIn ? (
 
   <LoginPage
-    onLogin={() => {
+    onLogin={(email) => {
       setLoggedIn(true);
       setSelectedSite(null);
     }}

@@ -1,6 +1,8 @@
 import React from 'react';
 
 export default function LoginPage({ onLogin }) {
+  const [email, setEmail] = useState("");
+
   return (
     <main style={{ maxWidth: '360px', margin: '0 auto' }}>
       <h2>Contractor Login</h2>
@@ -8,7 +10,7 @@ export default function LoginPage({ onLogin }) {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          onLogin?.();
+          onLogin?.(email);
         }}
       >
         <label style={{ display: 'block', marginBottom: '0.5rem' }}>
@@ -17,6 +19,8 @@ export default function LoginPage({ onLogin }) {
             type="email"
             placeholder="name@example.com"
             style={{ width: '100%', padding: '8px', marginTop: '4px' }}
+            value={email}
+onChange={(e) => setEmail(e.target.value)}
           />
         </label>
 
