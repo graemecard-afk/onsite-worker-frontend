@@ -8,36 +8,6 @@ import SelectSitePage from './pages/SelectSitePage.jsx';
 import ArrivePage from './pages/ArrivePage.jsx';
 import OnShiftPage from "./pages/OnShiftPages";
 
-useEffect(() => {
-  try {
-    const raw = localStorage.getItem("onsiteWorkerSession");
-    if (!raw) return;
-
-    const s = JSON.parse(raw);
-
-    if (s?.loggedIn) setLoggedIn(true);
-    if (s?.selectedSite) setSelectedSite(s.selectedSite);
-    if (typeof s?.shiftStartTime === "string") setShiftStartTime(s.shiftStartTime);
-    if (typeof s?.currentView === "string") setCurrentView(s.currentView);
-  } catch {
-    // ignore bad storage
-  }
-}, []);
-
-useEffect(() => {
-  try {
-    const session = {
-      loggedIn,
-      selectedSite,
-      shiftStartTime,
-      currentView,
-    };
-    localStorage.setItem("onsiteWorkerSession", JSON.stringify(session));
-  } catch {
-    // ignore storage errors
-  }
-}, [loggedIn, selectedSite, shiftStartTime, currentView]);
-
 
 
 function App() {
@@ -46,6 +16,42 @@ function App() {
   const [shiftStartTime, setShiftStartTime] = useState("");
   const [shiftEndTime, setShiftEndTime] = useState("");
 const [currentView, setCurrentView] = useState("login");
+  const [hydrated, setHydrated] = useState(false);
+
+
+    useEffect(() => {
+   if (!hydrated) return;   
+    try {
+      const raw = localStorage.getItem("onsiteWorkerSession");
+      if (raw) {
+        const s = JSON.parse(raw);
+
+        if (s?.loggedIn) setLoggedIn(true);
+        if (s?.selectedSite) setSelectedSite(s.selectedSite);
+        if (typeof s?.shiftStartTime === "string") setShiftStartTime(s.shiftStartTime);
+        if (typeof s?.currentView === "string") setCurrentView(s.currentView);
+      }
+    } catch {
+      // ignore bad storage
+    } finally {
+      setHydrated(true);
+    }
+  }, []);
+
+
+  useEffect(() => {
+    try {
+      const session = {
+        loggedIn,
+        selectedSite,
+        shiftStartTime,
+        currentView,
+      };
+      localStorage.setItem("onsiteWorkerSession", JSON.stringify(session));
+    } catch {
+      // ignore storage errors
+    }
+  }, [loggedIn, selectedSite, shiftStartTime, currentView]);
 
 
   const sites = [
