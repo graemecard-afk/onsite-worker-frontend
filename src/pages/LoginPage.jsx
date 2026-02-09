@@ -11,7 +11,7 @@ export default function LoginPage({ onLogin }) {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          onLogin?.(email);
+          onLogin?.(email.trim());
         }}
       >
         <label style={{ display: 'block', marginBottom: '0.5rem' }}>
