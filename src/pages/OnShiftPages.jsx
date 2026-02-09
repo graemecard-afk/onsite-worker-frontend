@@ -322,24 +322,27 @@ useEffect(() => {
         >
           Sign out
         </button>
-<button
-  type="button"
-  style={{
-    marginTop: 12,
-    width: "100%",
-    padding: "14px 16px",
-    borderRadius: 12,
-    border: "none",
-    background: "#2563eb",
-    color: "white",
-    fontSize: 16,
-    fontWeight: 600,
-    cursor: "pointer",
-  }}
-  onClick={() => onSupervisor?.()}
->
-  Supervisor
-</button>
+{onSupervisor ? (
+  <button
+    type="button"
+    style={{
+      marginTop: 12,
+      width: "100%",
+      padding: "14px 16px",
+      borderRadius: 12,
+      border: "none",
+      background: "#2563eb",
+      color: "white",
+      fontSize: 16,
+      fontWeight: 600,
+      cursor: "pointer",
+    }}
+    onClick={() => onSupervisor?.()}
+  >
+    Supervisor
+  </button>
+) : null}
+
 
       </div>
     </div>

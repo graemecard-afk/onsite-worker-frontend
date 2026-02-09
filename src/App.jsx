@@ -8,8 +8,7 @@ import SelectSitePage from './pages/SelectSitePage.jsx';
 import ArrivePage from './pages/ArrivePage.jsx';
 import OnShiftPage from "./pages/OnShiftPages";
 import SupervisorDashboardPage from "./pages/SupervisorDashboardPage.jsx";
-
-
+const ADMIN_EMAILS = ["admin@example.com"].map(e => e.toLowerCase());
 
 
 function App() {
@@ -23,9 +22,8 @@ const [currentView, setCurrentView] = useState("login");
 const [completedTasks, setCompletedTasks] = useState([]);
 const [breadcrumbs, setBreadcrumbs] = useState([]);
 const [gpsStatus, setGpsStatus] = useState("idle"); // idle | requesting | ok | denied | error
-
-
-
+const [userEmail, setUserEmail] = useState("");
+const isAdmin = ADMIN_EMAILS.includes((userEmail || "").toLowerCase());
 
 
     useEffect(() => {
@@ -42,8 +40,7 @@ const [gpsStatus, setGpsStatus] = useState("idle"); // idle | requesting | ok | 
 if (Array.isArray(s?.completedTasks)) setCompletedTasks(s.completedTasks);
 if (Array.isArray(s?.breadcrumbs)) setBreadcrumbs(s.breadcrumbs);
 if (typeof s?.gpsStatus === "string") setGpsStatus(s.gpsStatus);
-
-
+if (typeof s?.userEmail === "string") setUserEmail(s.userEmail);
 
       }
     } catch {
@@ -75,7 +72,7 @@ if (typeof s?.gpsStatus === "string") setGpsStatus(s.gpsStatus);
     } catch {
       // ignore storage errors
     }
-  }, [loggedIn, selectedSite, shiftStartTime, currentView, activeTask, completedTasks, breadcrumbs, gpsStatus]);
+  }, [loggedIn, userEmail, selectedSite, shiftStartTime, currentView, activeTask, completedTasks, breadcrumbs, gpsStatus]);
 
 // --- REAL GPS breadcrumbs while on shift ---
 useEffect(() => {
@@ -123,6 +120,10 @@ useEffect(() => {
 ];
 
 
+if (currentView === "supervisor" && !isAdmin) {
+  setCurrentView("onShift");
+  return null;
+}
 
   return (
     <>
@@ -160,8 +161,8 @@ useEffect(() => {
       completedTasks={completedTasks}
       setCompletedTasks={setCompletedTasks}
       breadcrumbs={breadcrumbs}
-      onSupervisor={() => setCurrentView("supervisor")}
-      onSignOut={() => {
+      onSupervisor={isAdmin ? () => setCurrentView("supervisor") : undefined}
+     onSignOut={() => {
         const now = new Date();
 
         const formatted = now.toLocaleString("en-NZ", {
