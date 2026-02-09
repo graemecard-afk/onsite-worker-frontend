@@ -71,7 +71,12 @@ const [currentView, setCurrentView] = useState("login");
     style={{ maxWidth: '280px', height: 'auto' }}
   />
 </header>
-{!loggedIn ? (
+{!hydrated ? (
+  <div style={{ textAlign: "center", padding: 24 }}>
+    Loading...
+  </div>
+) : !loggedIn ? (
+
   <LoginPage
     onLogin={() => {
       setLoggedIn(true);
