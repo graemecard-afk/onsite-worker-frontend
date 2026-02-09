@@ -1,4 +1,6 @@
 import React from "react";
+import BreadcrumbMap from "../components/BreadcrumbMap.jsx";
+
 
 export default function SupervisorDashboardPage({ selectedSite, breadcrumbs = [] }) {
   const count = Array.isArray(breadcrumbs) ? breadcrumbs.length : 0;
@@ -16,18 +18,8 @@ export default function SupervisorDashboardPage({ selectedSite, breadcrumbs = []
         </div>
       </div>
 
-      <div
-        style={{
-          border: "1px solid #ddd",
-          borderRadius: 8,
-          padding: 12,
-          background: "#fafafa",
-        }}
-      >
-        <div style={{ fontWeight: 600, marginBottom: 8 }}>Map (placeholder)</div>
-        <div style={{ fontSize: 14, opacity: 0.8 }}>
-          Next: add a map component and plot the breadcrumb trail.
-        </div>
+      <BreadcrumbMap breadcrumbs={breadcrumbs} />
+
       </div>
     </div>
   );
