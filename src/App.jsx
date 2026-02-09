@@ -7,6 +7,8 @@ import LoginPage from './pages/LoginPage.jsx';
 import SelectSitePage from './pages/SelectSitePage.jsx';
 import ArrivePage from './pages/ArrivePage.jsx';
 import OnShiftPage from "./pages/OnShiftPages";
+import SupervisorDashboardPage from "./pages/SupervisorDashboardPage.jsx";
+
 
 
 
@@ -144,24 +146,30 @@ useEffect(() => {
     }}
   />
 ): selectedSite ? (
-  currentView === "onShift" ? (
+  currentView === "supervisor" ? (
+    <SupervisorDashboardPage
+      selectedSite={selectedSite}
+      breadcrumbs={breadcrumbs}
+    />
+  ) : currentView === "onShift" ? (
     <OnShiftPage
-  siteName={selectedSite?.name}
-  shiftStartTimeText={shiftStartTime}
-    activeTask={activeTask}
-  setActiveTask={setActiveTask}
-  completedTasks={completedTasks}
-  setCompletedTasks={setCompletedTasks}
-  breadcrumbs={breadcrumbs}
-  onSignOut={() => {
-    const now = new Date();
+      siteName={selectedSite?.name}
+      shiftStartTimeText={shiftStartTime}
+      activeTask={activeTask}
+      setActiveTask={setActiveTask}
+      completedTasks={completedTasks}
+      setCompletedTasks={setCompletedTasks}
+      breadcrumbs={breadcrumbs}
+      onSignOut={() => {
+        const now = new Date();
 
-    const formatted = now.toLocaleString("en-NZ", {
-      timeZone: "Pacific/Auckland",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
+        const formatted = now.toLocaleString("en-NZ", {
+          timeZone: "Pacific/Auckland",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        });
+
 
     setShiftEndTime(formatted);
     setShiftStartTime("");
