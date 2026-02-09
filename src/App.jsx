@@ -160,6 +160,7 @@ useEffect(() => {
       completedTasks={completedTasks}
       setCompletedTasks={setCompletedTasks}
       breadcrumbs={breadcrumbs}
+      onSupervisor={() => setCurrentView("supervisor")}
       onSignOut={() => {
         const now = new Date();
 
