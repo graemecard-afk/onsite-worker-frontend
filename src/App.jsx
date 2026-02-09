@@ -20,7 +20,6 @@ const [currentView, setCurrentView] = useState("login");
 
 
     useEffect(() => {
-   if (!hydrated) return;   
     try {
       const raw = localStorage.getItem("onsiteWorkerSession");
       if (raw) {
@@ -40,6 +39,7 @@ const [currentView, setCurrentView] = useState("login");
 
 
   useEffect(() => {
+    if (!hydrated) return;
     try {
       const session = {
         loggedIn,
