@@ -17,6 +17,9 @@ function App() {
   const [shiftEndTime, setShiftEndTime] = useState("");
 const [currentView, setCurrentView] = useState("login");
   const [hydrated, setHydrated] = useState(false);
+  const [activeTask, setActiveTask] = useState(null);
+const [completedTasks, setCompletedTasks] = useState([]);
+
 
 
     useEffect(() => {
@@ -29,6 +32,9 @@ const [currentView, setCurrentView] = useState("login");
         if (s?.selectedSite) setSelectedSite(s.selectedSite);
         if (typeof s?.shiftStartTime === "string") setShiftStartTime(s.shiftStartTime);
         if (typeof s?.currentView === "string") setCurrentView(s.currentView);
+        if (s?.activeTask) setActiveTask(s.activeTask);
+if (Array.isArray(s?.completedTasks)) setCompletedTasks(s.completedTasks);
+
       }
     } catch {
       // ignore bad storage
@@ -42,16 +48,21 @@ const [currentView, setCurrentView] = useState("login");
     if (!hydrated) return;
     try {
       const session = {
-        loggedIn,
-        selectedSite,
-        shiftStartTime,
-        currentView,
-      };
+  loggedIn,
+  selectedSite,
+  shiftStartTime,
+  currentView,
+
+  // task state (frontend only for now)
+  activeTask,
+  completedTasks,
+};
+
       localStorage.setItem("onsiteWorkerSession", JSON.stringify(session));
     } catch {
       // ignore storage errors
     }
-  }, [loggedIn, selectedSite, shiftStartTime, currentView]);
+  }, [loggedIn, selectedSite, shiftStartTime, currentView, activeTask, completedTasks]);
 
 
   const sites = [
@@ -88,6 +99,10 @@ const [currentView, setCurrentView] = useState("login");
     <OnShiftPage
   siteName={selectedSite?.name}
   shiftStartTimeText={shiftStartTime}
+    activeTask={activeTask}
+  setActiveTask={setActiveTask}
+  completedTasks={completedTasks}
+  setCompletedTasks={setCompletedTasks}
   onSignOut={() => {
     const now = new Date();
 

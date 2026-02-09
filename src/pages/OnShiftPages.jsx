@@ -6,8 +6,14 @@ export default function OnShiftPage({
   theme,
   siteName,
   shiftStartTimeText,
-   onSignOut,
+  onSignOut,
+
+  activeTask,
+  setActiveTask,
+  completedTasks,
+  setCompletedTasks,
 }) {
+
   const isDark = theme === "dark";
 const [minutesOnSite, setMinutesOnSite] = useState(0);
 
@@ -15,8 +21,6 @@ const [minutesOnSite, setMinutesOnSite] = useState(0);
 const [selectedTask, setSelectedTask] = useState('');
 const [otherTaskText, setOtherTaskText] = useState('');
 
-const [activeTask, setActiveTask] = useState(null); // { label, startedAt }
-const [completedTasks, setCompletedTasks] = useState([]);
 
 const [activeTaskElapsed, setActiveTaskElapsed] = useState(0);
 
