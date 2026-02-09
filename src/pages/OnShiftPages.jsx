@@ -9,7 +9,33 @@ export default function OnShiftPage({
    onSignOut,
 }) {
   const isDark = theme === "dark";
-  const [minutesOnSite, setMinutesOnSite] = useState(0);
+const [minutesOnSite, setMinutesOnSite] = useState(0);
+
+// --- TASK STATE ---
+const [selectedTask, setSelectedTask] = useState('');
+const [otherTaskText, setOtherTaskText] = useState('');
+
+const [activeTask, setActiveTask] = useState(null); // { label, startedAt }
+const [completedTasks, setCompletedTasks] = useState([]);
+
+const [activeTaskElapsed, setActiveTaskElapsed] = useState(0);
+
+// --- ACTIVE TASK TIMER ---
+useEffect(() => {
+  if (!activeTask) return;
+
+  const tick = () => {
+    const diffMs = Date.now() - new Date(activeTask.startedAt).getTime();
+    setActiveTaskElapsed(Math.floor(diffMs / 1000));
+  };
+
+  tick();
+  const id = setInterval(tick, 1000);
+
+  return () => clearInterval(id);
+}, [activeTask]);
+
+
 
 useEffect(() => {
   if (!shiftStartTimeText) return;
@@ -122,7 +148,11 @@ useEffect(() => {
   <label style={{ display: 'block', fontSize: 14, marginBottom: 6 }}>
     Task
   </label>
-  <select disabled style={{ width: '100%', padding: 10, borderRadius: 10, border: '1px solid rgba(0,0,0,0.2)' }}>
+  <select
+  value={selectedTask}
+  onChange={e => setSelectedTask(e.target.value)}
+  style={{ width: '100%', padding: 10, borderRadius: 10, border: '1px solid rgba(0,0,0,0.2)' }}
+>
     <option value="">Select a task…</option>
     <option value="check_pumps">Check pumps</option>
     <option value="clear_debris_access_way">Clear debris from access way</option>
@@ -139,25 +169,112 @@ useEffect(() => {
       If Other, describe
     </label>
     <input
-      disabled
-      type="text"
-      placeholder="Type what you’re doing…"
-      style={{ width: '100%', padding: 10, borderRadius: 10, border: '1px solid rgba(0,0,0,0.2)' }}
-    />
+  type="text"
+  value={otherTaskText}
+  onChange={e => setOtherTaskText(e.target.value)}
+  disabled={selectedTask !== 'other'}
+  placeholder="Type what you’re doing…"
+  style={{ width: '100%', padding: 10, borderRadius: 10, borderRadius: 10, border: '1px solid rgba(0,0,0,0.2)' }}
+/>
+
   </div>
 
   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
-    <button type="button" disabled>
-      Start task
-    </button>
-    <button type="button" disabled>
-      Stop task
-    </button>
+   <button
+  type="button"
+  disabled={!selectedTask || activeTask}
+  onClick={() => {
+    let label = selectedTask;
+
+    if (selectedTask === 'other') {
+      if (!otherTaskText.trim()) return;
+      label = otherTaskText.trim();
+    } else {
+      const map = {
+        check_pumps: 'Check pumps',
+        clear_debris_access_way: 'Clear debris from access way',
+        flush_pod_lines_headworks: 'Flush pod lines and headworks',
+        read_gauges: 'Read gauges',
+        shift_pod_lines: 'Shift pod lines',
+        unblock_sprinklers: 'Unblock sprinklers',
+        weed_spray_around_pumps: 'Weed spray around pumps',
+      };
+
+      label = map[selectedTask];
+    }
+
+    setActiveTask({
+      label,
+      startedAt: new Date().toISOString(),
+    });
+
+    setSelectedTask('');
+    setOtherTaskText('');
+    setActiveTaskElapsed(0);
+  }}
+>
+  Start task
+</button>
+
+    <button
+  type="button"
+  disabled={!activeTask}
+  onClick={() => {
+    const endedAt = new Date().toISOString();
+
+    const durationSeconds = Math.floor(
+      (new Date(endedAt).getTime() -
+        new Date(activeTask.startedAt).getTime()) /
+        1000
+    );
+
+    setCompletedTasks(prev => [
+      ...prev,
+      {
+        ...activeTask,
+        endedAt,
+        durationSeconds,
+      },
+    ]);
+
+    setActiveTask(null);
+    setActiveTaskElapsed(0);
+  }}
+>
+  Stop task
+</button>
+
   </div>
 
+  {activeTask && (
+  <div style={{ marginTop: 12, fontSize: 14 }}>
+    <strong>Active task:</strong> {activeTask.label}
+    <div>
+      Running: {Math.floor(activeTaskElapsed / 60)}m {activeTaskElapsed % 60}s
+    </div>
+  </div>
+)}
+
+{!activeTask && completedTasks.length === 0 && (
   <div style={{ marginTop: 12, fontSize: 14, opacity: 0.8 }}>
     No tasks yet.
   </div>
+)}
+
+{completedTasks.length > 0 && (
+  <div style={{ marginTop: 12 }}>
+    <strong>Completed tasks</strong>
+    <ul>
+      {completedTasks.map((t, idx) => (
+        <li key={idx}>
+          {t.label} — {Math.floor(t.durationSeconds / 60)}m{' '}
+          {t.durationSeconds % 60}s
+        </li>
+      ))}
+    </ul>
+  </div>
+)}
+
 </div>
 
 
@@ -175,9 +292,8 @@ useEffect(() => {
             fontWeight: 600,
             cursor: "pointer",
           }}
-          onClick={() => {
-  onSignOut?.();
-}}
+          onClick={() => onSignOut?.()}
+
 
         >
           Sign out
