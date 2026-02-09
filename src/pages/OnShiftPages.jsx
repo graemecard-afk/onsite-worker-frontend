@@ -183,7 +183,18 @@ useEffect(() => {
    <button
   type="button"
   disabled={!selectedTask || activeTask}
+  style={{
+    background: "#16a34a",
+    color: "white",
+    border: "none",
+    borderRadius: 10,
+    padding: "10px 14px",
+    fontWeight: 600,
+    cursor: "pointer",
+    opacity: !selectedTask || activeTask ? 0.6 : 1,
+  }}
   onClick={() => {
+
     let label = selectedTask;
 
     if (selectedTask === 'other') {
@@ -219,7 +230,18 @@ useEffect(() => {
     <button
   type="button"
   disabled={!activeTask}
+  style={{
+    background: "#dc2626",
+    color: "white",
+    border: "none",
+    borderRadius: 10,
+    padding: "10px 14px",
+    fontWeight: 600,
+    cursor: "pointer",
+    opacity: !activeTask ? 0.6 : 1,
+  }}
   onClick={() => {
+
     const endedAt = new Date().toISOString();
 
     const durationSeconds = Math.floor(
