@@ -19,6 +19,8 @@ const [currentView, setCurrentView] = useState("login");
   const [hydrated, setHydrated] = useState(false);
   const [activeTask, setActiveTask] = useState(null);
 const [completedTasks, setCompletedTasks] = useState([]);
+const [breadcrumbs, setBreadcrumbs] = useState([]);
+
 
 
 
@@ -34,6 +36,8 @@ const [completedTasks, setCompletedTasks] = useState([]);
         if (typeof s?.currentView === "string") setCurrentView(s.currentView);
         if (s?.activeTask) setActiveTask(s.activeTask);
 if (Array.isArray(s?.completedTasks)) setCompletedTasks(s.completedTasks);
+if (Array.isArray(s?.breadcrumbs)) setBreadcrumbs(s.breadcrumbs);
+
 
       }
     } catch {
@@ -56,14 +60,39 @@ if (Array.isArray(s?.completedTasks)) setCompletedTasks(s.completedTasks);
   // task state (frontend only for now)
   activeTask,
   completedTasks,
+  // gps breadcrumbs (mock)
+  breadcrumbs,
 };
 
       localStorage.setItem("onsiteWorkerSession", JSON.stringify(session));
     } catch {
       // ignore storage errors
     }
-  }, [loggedIn, selectedSite, shiftStartTime, currentView, activeTask, completedTasks]);
+  }, [loggedIn, selectedSite, shiftStartTime, currentView, activeTask, completedTasks, breadcrumbs]);
 
+// --- MOCK GPS breadcrumbs every 5 min while on shift ---
+useEffect(() => {
+  if (currentView !== "onShift") return;
+
+  const makeFakePoint = () => {
+    const baseLat = -38.66; // Gisborne-ish
+    const baseLng = 178.02;
+
+    const jitter = () => (Math.random() - 0.5) * 0.001;
+
+    return {
+      lat: baseLat + jitter(),
+      lng: baseLng + jitter(),
+      at: new Date().toISOString(),
+    };
+  };
+
+  const id = setInterval(() => {
+    setBreadcrumbs(prev => [...prev, makeFakePoint()]);
+  }, 5 * 60 * 1000);
+
+  return () => clearInterval(id);
+}, [currentView]);
 
   const sites = [
   { id: 'waiapu', name: 'Waiapu Landfill Site' },
