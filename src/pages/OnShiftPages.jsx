@@ -111,6 +111,56 @@ useEffect(() => {
           </div>
         </div>
 
+        {/* TASKS (scaffold - frontend only) */}
+<div style={{ marginTop: 16, padding: 16, border: '1px solid rgba(0,0,0,0.15)', borderRadius: 12 }}>
+  <div style={{ fontWeight: 700, marginBottom: 8 }}>Tasks</div>
+
+  <div style={{ fontSize: 14, opacity: 0.8, marginBottom: 12 }}>
+    Select a common task (or Other) — wiring + timers coming next.
+  </div>
+
+  <label style={{ display: 'block', fontSize: 14, marginBottom: 6 }}>
+    Task
+  </label>
+  <select disabled style={{ width: '100%', padding: 10, borderRadius: 10, border: '1px solid rgba(0,0,0,0.2)' }}>
+    <option value="">Select a task…</option>
+    <option value="check_pumps">Check pumps</option>
+    <option value="clear_debris_access_way">Clear debris from access way</option>
+    <option value="flush_pod_lines_headworks">Flush pod lines and headworks</option>
+    <option value="read_gauges">Read gauges</option>
+    <option value="shift_pod_lines">Shift pod lines</option>
+    <option value="unblock_sprinklers">Unblock sprinklers</option>
+    <option value="weed_spray_around_pumps">Weed spray around pumps</option>
+    <option value="other">Other (specify)</option>
+  </select>
+
+  <div style={{ marginTop: 10 }}>
+    <label style={{ display: 'block', fontSize: 14, marginBottom: 6 }}>
+      If Other, describe
+    </label>
+    <input
+      disabled
+      type="text"
+      placeholder="Type what you’re doing…"
+      style={{ width: '100%', padding: 10, borderRadius: 10, border: '1px solid rgba(0,0,0,0.2)' }}
+    />
+  </div>
+
+  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
+    <button type="button" disabled>
+      Start task
+    </button>
+    <button type="button" disabled>
+      Stop task
+    </button>
+  </div>
+
+  <div style={{ marginTop: 12, fontSize: 14, opacity: 0.8 }}>
+    No tasks yet.
+  </div>
+</div>
+
+
                 <button
           type="button"
           style={{
