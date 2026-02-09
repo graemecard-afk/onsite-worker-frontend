@@ -56,6 +56,7 @@ if (typeof s?.userEmail === "string") setUserEmail(s.userEmail);
     try {
       const session = {
   loggedIn,
+  userEmail,
   selectedSite,
   shiftStartTime,
   currentView,
