@@ -1,5 +1,7 @@
 // src/pages/OnShiftPage.jsx
 import React, { useEffect, useState } from "react";
+import GpsBreadcrumbs from "../components/GpsBreadcrumbs.jsx";
+
 
 
 export default function OnShiftPage({
@@ -135,30 +137,7 @@ useEffect(() => {
           </div>
         </div>
 
-        <div style={boxStyle}>
-          <strong>GPS tracking</strong>
-
-{breadcrumbs && breadcrumbs.length > 0 ? (
-  <div style={{ marginTop: 6, opacity: 0.85 }}>
-    Last point:
-    <div>
-      Lat: {breadcrumbs[breadcrumbs.length - 1].lat.toFixed(5)}, Lng:{' '}
-      {breadcrumbs[breadcrumbs.length - 1].lng.toFixed(5)}
-    </div>
-    <div>
-      At:{' '}
-      {new Date(
-        breadcrumbs[breadcrumbs.length - 1].at
-      ).toLocaleTimeString()}
-    </div>
-  </div>
-) : (
-  <div style={{ marginTop: 6, opacity: 0.85 }}>
-    No GPS points yet.
-  </div>
-)}
-
-        </div>
+        <GpsBreadcrumbs boxStyle={boxStyle} breadcrumbs={breadcrumbs} />
 
         {/* TASKS (scaffold - frontend only) */}
 <div style={{ marginTop: 16, padding: 16, border: '1px solid rgba(0,0,0,0.15)', borderRadius: 12 }}>
