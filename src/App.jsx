@@ -20,6 +20,8 @@ const [currentView, setCurrentView] = useState("login");
   const [activeTask, setActiveTask] = useState(null);
 const [completedTasks, setCompletedTasks] = useState([]);
 const [breadcrumbs, setBreadcrumbs] = useState([]);
+const [gpsStatus, setGpsStatus] = useState("idle"); // idle | requesting | ok | denied | error
+
 
 
 
@@ -37,6 +39,8 @@ const [breadcrumbs, setBreadcrumbs] = useState([]);
         if (s?.activeTask) setActiveTask(s.activeTask);
 if (Array.isArray(s?.completedTasks)) setCompletedTasks(s.completedTasks);
 if (Array.isArray(s?.breadcrumbs)) setBreadcrumbs(s.breadcrumbs);
+if (typeof s?.gpsStatus === "string") setGpsStatus(s.gpsStatus);
+
 
 
       }
@@ -62,36 +66,52 @@ if (Array.isArray(s?.breadcrumbs)) setBreadcrumbs(s.breadcrumbs);
   completedTasks,
   // gps breadcrumbs (mock)
   breadcrumbs,
+  gpsStatus,
 };
 
       localStorage.setItem("onsiteWorkerSession", JSON.stringify(session));
     } catch {
       // ignore storage errors
     }
-  }, [loggedIn, selectedSite, shiftStartTime, currentView, activeTask, completedTasks, breadcrumbs]);
+  }, [loggedIn, selectedSite, shiftStartTime, currentView, activeTask, completedTasks, breadcrumbs, gpsStatus]);
 
-// --- MOCK GPS breadcrumbs every 5 min while on shift ---
+// --- REAL GPS breadcrumbs while on shift ---
 useEffect(() => {
   if (currentView !== "onShift") return;
+  if (!navigator.geolocation) {
+    setGpsStatus("error");
+    return;
+  }
 
-  const makeFakePoint = () => {
-    const baseLat = -38.66; // Gisborne-ish
-    const baseLng = 178.02;
+  setGpsStatus("requesting");
 
-    const jitter = () => (Math.random() - 0.5) * 0.001;
+  const watchId = navigator.geolocation.watchPosition(
+    pos => {
+      setGpsStatus("ok");
 
-    return {
-      lat: baseLat + jitter(),
-      lng: baseLng + jitter(),
-      at: new Date().toISOString(),
-    };
-  };
+      const { latitude, longitude } = pos.coords;
 
-  const id = setInterval(() => {
-    setBreadcrumbs(prev => [...prev, makeFakePoint()]);
-  }, 5 * 60 * 1000);
+      setBreadcrumbs(prev => [
+        ...prev,
+        {
+          lat: latitude,
+          lng: longitude,
+          at: new Date().toISOString(),
+        },
+      ]);
+    },
+    err => {
+      if (err.code === 1) setGpsStatus("denied");
+      else setGpsStatus("error");
+    },
+    {
+      enableHighAccuracy: true,
+      maximumAge: 0,
+      timeout: 20000,
+    }
+  );
 
-  return () => clearInterval(id);
+  return () => navigator.geolocation.clearWatch(watchId);
 }, [currentView]);
 
   const sites = [
