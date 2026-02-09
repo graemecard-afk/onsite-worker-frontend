@@ -153,6 +153,7 @@ if (currentView === "supervisor" && !isAdmin) {
     <SupervisorDashboardPage
       selectedSite={selectedSite}
       breadcrumbs={breadcrumbs}
+      onBack={() => setCurrentView("onShift")}
       onLogout={() => {
   setLoggedIn(false);
   setUserEmail("");
