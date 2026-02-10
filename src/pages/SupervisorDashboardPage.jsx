@@ -3,7 +3,10 @@ import BreadcrumbMap from "../components/BreadcrumbMap.jsx";
 
 
 export default function SupervisorDashboardPage({ selectedSite, breadcrumbs = [], onBack, onLogout }) {
-  const count = Array.isArray(breadcrumbs) ? breadcrumbs.length : 0;
+ const rawCount = Array.isArray(breadcrumbs) ? breadcrumbs.length : 0;
+const displayedCount = rawCount; // display-throttling happens in BreadcrumbMap
+
+
     const sessionRaw = localStorage.getItem("onsiteWorkerSession");
   let workerEmail = "";
   try {
@@ -12,7 +15,6 @@ export default function SupervisorDashboardPage({ selectedSite, breadcrumbs = []
   } catch (e) {
     workerEmail = "";
   }
-
 
   return (
     <div style={{ padding: 16 }}>
@@ -23,6 +25,11 @@ export default function SupervisorDashboardPage({ selectedSite, breadcrumbs = []
     Worker: <strong>{workerEmail}</strong>
   </div>
 ) : null}
+<div style={{ fontSize: 14, opacity: 0.8, marginBottom: 8 }}>
+  Breadcrumbs: <strong>{rawCount}</strong> raw /{" "}
+  <strong>{displayedCount}</strong> displayed
+</div>
+
 
 <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
 
