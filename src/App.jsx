@@ -21,6 +21,7 @@ const [currentView, setCurrentView] = useState("login");
   const [activeTask, setActiveTask] = useState(null);
 const [completedTasks, setCompletedTasks] = useState([]);
 const [breadcrumbs, setBreadcrumbs] = useState([]);
+const [shiftId, setShiftId] = useState("");
 const [gpsStatus, setGpsStatus] = useState("idle"); // idle | requesting | ok | denied | error
 const [userEmail, setUserEmail] = useState("");
 const isAdmin = ADMIN_EMAILS.includes((userEmail || "").toLowerCase());
@@ -66,6 +67,7 @@ if (typeof s?.userEmail === "string") setUserEmail(s.userEmail);
   completedTasks,
   // gps breadcrumbs (mock)
   breadcrumbs,
+  shiftId,
   gpsStatus,
 };
 
@@ -73,7 +75,7 @@ if (typeof s?.userEmail === "string") setUserEmail(s.userEmail);
     } catch {
       // ignore storage errors
     }
-  }, [loggedIn, userEmail, selectedSite, shiftStartTime, currentView, activeTask, completedTasks, breadcrumbs, gpsStatus]);
+  }, [loggedIn, userEmail, selectedSite, shiftStartTime, currentView, activeTask, completedTasks, breadcrumbs, shiftId, gpsStatus]);
 
 // --- REAL GPS breadcrumbs while on shift ---
 useEffect(() => {
@@ -89,16 +91,41 @@ useEffect(() => {
     pos => {
       setGpsStatus("ok");
 
-      const { latitude, longitude } = pos.coords;
+            const { latitude, longitude, accuracy } = pos.coords;
 
-      setBreadcrumbs(prev => [
-        ...prev,
-        {
-          lat: latitude,
-          lng: longitude,
-          at: new Date().toISOString(),
-        },
-      ]);
+      const point = {
+        lat: latitude,
+        lng: longitude,
+        at: new Date().toISOString(),
+      };
+
+      // Update UI immediately (offline-friendly)
+      setBreadcrumbs(prev => [...prev, point]);
+
+      // Also post to backend if we have a shiftId
+      if (shiftId) {
+        try {
+          const base = import.meta.env.VITE_API_BASE_URL || "";
+          if (!base) throw new Error("Missing VITE_API_BASE_URL");
+
+          fetch(`${base.replace(/\/$/, "")}/breadcrumbs`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              shiftId,
+              at: point.at,
+              lat: point.lat,
+              lng: point.lng,
+              accuracyM: typeof accuracy === "number" ? Math.round(accuracy) : null,
+            }),
+          }).catch(() => {
+            // ignore network errors (we keep UI working regardless)
+          });
+        } catch (e) {
+          // ignore
+        }
+      }
+
     },
     err => {
       if (err.code === 1) setGpsStatus("denied");
@@ -198,7 +225,7 @@ if (currentView === "supervisor" && !isAdmin) {
         setSelectedSite(null);
         setCurrentView("selectSite");
       }}
-      onArrive={() => {
+      onArrive={async() => {
         const now = new Date();
 
         const formatted = now.toLocaleString("en-NZ", {
@@ -209,6 +236,39 @@ if (currentView === "supervisor" && !isAdmin) {
         });
 
         setShiftStartTime(formatted);
+                // Start shift in backend and store shiftId for supervisor fetch
+        try {
+          const base = import.meta.env.VITE_API_BASE_URL || "";
+          if (!base) throw new Error("Missing VITE_API_BASE_URL");
+
+          const resp = await fetch(`${base.replace(/\/$/, "")}/shifts/start`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              siteId: selectedSite?.id || "",
+              workerEmail: userEmail || "",
+            }),
+          });
+
+          const data = await resp.json().catch(() => ({}));
+
+          if (!resp.ok) {
+            throw new Error(data?.error || `Start shift failed (${resp.status})`);
+          }
+
+          const newShiftId = data?.shift?.id || "";
+          setShiftId(newShiftId);
+          if (newShiftId) {
+            // Update persisted session immediately
+            const raw = localStorage.getItem("onsiteWorkerSession");
+            const session = raw ? JSON.parse(raw) : {};
+            session.shiftId = newShiftId;
+            localStorage.setItem("onsiteWorkerSession", JSON.stringify(session));
+          }
+        } catch (e) {
+          console.error("Backend /shifts/start failed:", e);
+        }
+
         setCurrentView("onShift");
       }}
     />

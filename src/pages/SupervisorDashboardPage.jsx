@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import BreadcrumbMap from "../components/BreadcrumbMap.jsx";
 
 export default function SupervisorDashboardPage({
@@ -7,48 +7,132 @@ export default function SupervisorDashboardPage({
   onBack,
   onLogout,
 }) {
-  // Fallback: if breadcrumbs prop is empty, pull from persisted session
+  const [apiBreadcrumbs, setApiBreadcrumbs] = useState([]);
+  const [apiError, setApiError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Read session once per render (small + safe)
+  const session = useMemo(() => {
+    try {
+      const raw = localStorage.getItem("onsiteWorkerSession");
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
+  }, []);
+
+  const workerEmail = (session?.userEmail || "").trim();
+  const shiftId = (session?.shiftId || "").trim();
+
+  // Decide what to display:
+  // 1) If parent passed breadcrumbs prop, use it.
+  // 2) Else if we fetched from API, use that.
+  // 3) Else fallback to persisted session breadcrumbs.
   let breadcrumbsList = breadcrumbs;
 
-  try {
-    if (!Array.isArray(breadcrumbsList) || breadcrumbsList.length === 0) {
-      const raw = localStorage.getItem("onsiteWorkerSession");
-      const session = raw ? JSON.parse(raw) : null;
-      if (Array.isArray(session?.breadcrumbs)) {
-        breadcrumbsList = session.breadcrumbs;
-      }
+  if (!Array.isArray(breadcrumbsList) || breadcrumbsList.length === 0) {
+    if (Array.isArray(apiBreadcrumbs) && apiBreadcrumbs.length > 0) {
+      breadcrumbsList = apiBreadcrumbs;
+    } else if (Array.isArray(session?.breadcrumbs)) {
+      breadcrumbsList = session.breadcrumbs;
+    } else {
+      breadcrumbsList = [];
     }
-  } catch (e) {
-    // ignore
   }
 
   const rawCount = Array.isArray(breadcrumbsList) ? breadcrumbsList.length : 0;
-
-
-  const lastBreadcrumbTs =
-  rawCount > 0 ? breadcrumbsList[rawCount - 1]?.at : null;
-
-
+  const lastBreadcrumbTs = rawCount > 0 ? breadcrumbsList[rawCount - 1]?.at : null;
   const displayedCount = rawCount; // display-throttling happens in BreadcrumbMap
 
-  const sessionRaw = localStorage.getItem("onsiteWorkerSession");
-  let workerEmail = "";
-  try {
-    const session = sessionRaw ? JSON.parse(sessionRaw) : null;
-    workerEmail = (session?.userEmail || "").trim();
-  } catch (e) {
-    workerEmail = "";
+  async function fetchBreadcrumbsOnce(currentShiftId) {
+    const base = import.meta.env.VITE_API_BASE_URL || "";
+    const token = import.meta.env.VITE_SUPERVISOR_TOKEN || "";
+
+    if (!base) {
+      throw new Error("Missing VITE_API_BASE_URL");
+    }
+    if (!token) {
+      throw new Error("Missing VITE_SUPERVISOR_TOKEN");
+    }
+
+    const url = `${base.replace(/\/$/, "")}/breadcrumbs?shiftId=${encodeURIComponent(
+      currentShiftId
+    )}`;
+
+    const resp = await fetch(url, {
+      method: "GET",
+      headers: {
+        "x-api-token": token,
+      },
+    });
+
+    const data = await resp.json().catch(() => ({}));
+
+    if (!resp.ok) {
+      const msg = data?.error || `Request failed (${resp.status})`;
+      throw new Error(msg);
+    }
+
+    return Array.isArray(data?.breadcrumbs) ? data.breadcrumbs : [];
   }
+
+  useEffect(() => {
+    // Only fetch if we have a real shiftId in session
+    if (!shiftId) return;
+
+    let cancelled = false;
+    let intervalId = null;
+
+    async function run() {
+      setIsLoading(true);
+      setApiError("");
+      try {
+        const rows = await fetchBreadcrumbsOnce(shiftId);
+        if (!cancelled) setApiBreadcrumbs(rows);
+      } catch (e) {
+        if (!cancelled) setApiError(String(e?.message || e));
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    }
+
+    run();
+
+    // Poll every 10s for supervisor view
+    intervalId = window.setInterval(run, 10000);
+
+    return () => {
+      cancelled = true;
+      if (intervalId) window.clearInterval(intervalId);
+    };
+  }, [shiftId]);
 
   return (
     <div style={{ padding: 16 }}>
       <h2 style={{ marginTop: 0 }}>Supervisor Dashboard</h2>
 
       {workerEmail ? (
-        <div style={{ fontSize: 14, opacity: 0.8, marginTop: 4, marginBottom: 8 }}>
+        <div
+          style={{
+            fontSize: 14,
+            opacity: 0.8,
+            marginTop: 4,
+            marginBottom: 8,
+          }}
+        >
           Worker: <strong>{workerEmail}</strong>
         </div>
       ) : null}
+
+      {shiftId ? (
+        <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 8 }}>
+          Shift ID: {shiftId}
+        </div>
+      ) : (
+        <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 8 }}>
+          Shift ID: — (not found in session)
+        </div>
+      )}
 
       <div style={{ fontSize: 14, opacity: 0.8, marginBottom: 4 }}>
         Breadcrumbs: <strong>{rawCount}</strong> raw /{" "}
@@ -58,6 +142,18 @@ export default function SupervisorDashboardPage({
       {lastBreadcrumbTs ? (
         <div style={{ fontSize: 13, opacity: 0.7, marginBottom: 8 }}>
           Last update: {new Date(lastBreadcrumbTs).toLocaleString()}
+        </div>
+      ) : null}
+
+      {isLoading ? (
+        <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 8 }}>
+          Loading from backend…
+        </div>
+      ) : null}
+
+      {apiError ? (
+        <div style={{ fontSize: 12, color: "crimson", marginBottom: 8 }}>
+          Backend fetch error: {apiError}
         </div>
       ) : null}
 
@@ -82,9 +178,9 @@ export default function SupervisorDashboardPage({
             if (!window.confirm("Clear breadcrumbs for this session?")) return;
             try {
               const raw = localStorage.getItem("onsiteWorkerSession");
-              const session = raw ? JSON.parse(raw) : {};
-              session.breadcrumbs = [];
-              localStorage.setItem("onsiteWorkerSession", JSON.stringify(session));
+              const s = raw ? JSON.parse(raw) : {};
+              s.breadcrumbs = [];
+              localStorage.setItem("onsiteWorkerSession", JSON.stringify(s));
             } catch (e) {
               // ignore
             }
