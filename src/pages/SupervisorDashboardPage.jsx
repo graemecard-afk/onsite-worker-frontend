@@ -46,6 +46,23 @@ const displayedCount = rawCount; // display-throttling happens in BreadcrumbMap
   >
     ← Back to shift
   </button>
+<button
+  type="button"
+  onClick={() => {
+    if (!window.confirm("Clear breadcrumbs for this session?")) return;
+    try {
+      const raw = localStorage.getItem("onsiteWorkerSession");
+      const session = raw ? JSON.parse(raw) : {};
+      session.breadcrumbs = [];
+      localStorage.setItem("onsiteWorkerSession", JSON.stringify(session));
+    } catch (e) {
+      // ignore
+    }
+    window.location.reload();
+  }}
+>
+  Clear breadcrumbs
+</button>
 
   <button
     type="button"
