@@ -67,7 +67,7 @@ const displayedCount = rawCount; // display-throttling happens in BreadcrumbMap
           <strong>Site:</strong> {selectedSite?.name || "—"}
         </div>
         <div>
-          <strong>Breadcrumb points:</strong> {count}
+          <strong>Breadcrumb points:</strong> {rawCount}
         </div>
       </div>
 
