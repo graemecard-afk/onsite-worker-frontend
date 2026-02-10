@@ -4,11 +4,28 @@ import BreadcrumbMap from "../components/BreadcrumbMap.jsx";
 
 export default function SupervisorDashboardPage({ selectedSite, breadcrumbs = [], onBack, onLogout }) {
   const count = Array.isArray(breadcrumbs) ? breadcrumbs.length : 0;
+    const sessionRaw = localStorage.getItem("onsiteWorkerSession");
+  let workerEmail = "";
+  try {
+    const session = sessionRaw ? JSON.parse(sessionRaw) : null;
+    workerEmail = (session?.userEmail || "").trim();
+  } catch (e) {
+    workerEmail = "";
+  }
+
 
   return (
     <div style={{ padding: 16 }}>
       <h2 style={{ marginTop: 0 }}>Supervisor Dashboard</h2>
+
+{workerEmail ? (
+  <div style={{ fontSize: 14, opacity: 0.8, marginTop: 4, marginBottom: 8 }}>
+    Worker: <strong>{workerEmail}</strong>
+  </div>
+) : null}
+
 <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+
   <button
     type="button"
     onClick={() => onBack?.()}
