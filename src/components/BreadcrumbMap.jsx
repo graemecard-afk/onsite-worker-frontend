@@ -1,5 +1,5 @@
 import React from "react";
-import { MapContainer, TileLayer, Polyline, Marker } from "react-leaflet";
+import { MapContainer, TileLayer, Polyline, Marker, useMap} from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
@@ -12,6 +12,26 @@ L.Icon.Default.mergeOptions({
   shadowUrl: markerShadow,
 });
 
+function FitBounds({ points }) {
+  const map = useMap();
+
+  React.useEffect(() => {
+    if (!map || !Array.isArray(points) || points.length === 0) return;
+
+    const latLngs = points.map(p => [p.lat, p.lng]);
+
+    try {
+      map.fitBounds(latLngs, {
+        padding: [20, 20],
+        maxZoom: 18,
+      });
+    } catch (e) {
+      // ignore bad bounds
+    }
+  }, [map, points]);
+
+  return null;
+}
 
 export default function BreadcrumbMap({ breadcrumbs = [] }) {
   if (!Array.isArray(breadcrumbs) || breadcrumbs.length === 0) {
@@ -69,10 +89,11 @@ const last = positions[positions.length - 1];
     <div style={{ height: 360, width: "100%", borderRadius: 12, overflow: "hidden" }}>
       <MapContainer
         center={last}
-        zoom={16}
+        zoom={12}
         style={{ height: "100%", width: "100%" }}
         scrollWheelZoom={true}
       >
+        <FitBounds points={positions} />
         <TileLayer
           attribution="© OpenStreetMap contributors"
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
