@@ -23,12 +23,6 @@ export default function SupervisorDashboardPage({
   }
 
   const rawCount = Array.isArray(breadcrumbsList) ? breadcrumbsList.length : 0;
-  console.log("SUPERVISOR breadcrumbsList[0]:", breadcrumbsList[0]);
-  console.log(
-  "SUPERVISOR last breadcrumb keys:",
-  rawCount > 0 ? Object.keys(breadcrumbsList[rawCount - 1]) : []
-);
-
 
 
   const lastBreadcrumbTs =
