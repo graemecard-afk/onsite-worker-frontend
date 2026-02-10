@@ -1,13 +1,43 @@
 import React from "react";
 import BreadcrumbMap from "../components/BreadcrumbMap.jsx";
 
+export default function SupervisorDashboardPage({
+  selectedSite,
+  breadcrumbs = [],
+  onBack,
+  onLogout,
+}) {
+  // Fallback: if breadcrumbs prop is empty, pull from persisted session
+  let breadcrumbsList = breadcrumbs;
 
-export default function SupervisorDashboardPage({ selectedSite, breadcrumbs = [], onBack, onLogout }) {
- const rawCount = Array.isArray(breadcrumbs) ? breadcrumbs.length : 0;
-const displayedCount = rawCount; // display-throttling happens in BreadcrumbMap
+  try {
+    if (!Array.isArray(breadcrumbsList) || breadcrumbsList.length === 0) {
+      const raw = localStorage.getItem("onsiteWorkerSession");
+      const session = raw ? JSON.parse(raw) : null;
+      if (Array.isArray(session?.breadcrumbs)) {
+        breadcrumbsList = session.breadcrumbs;
+      }
+    }
+  } catch (e) {
+    // ignore
+  }
+
+  const rawCount = Array.isArray(breadcrumbsList) ? breadcrumbsList.length : 0;
+  console.log("SUPERVISOR breadcrumbsList[0]:", breadcrumbsList[0]);
+  console.log(
+  "SUPERVISOR last breadcrumb keys:",
+  rawCount > 0 ? Object.keys(breadcrumbsList[rawCount - 1]) : []
+);
 
 
-    const sessionRaw = localStorage.getItem("onsiteWorkerSession");
+
+  const lastBreadcrumbTs =
+  rawCount > 0 ? breadcrumbsList[rawCount - 1]?.at : null;
+
+
+  const displayedCount = rawCount; // display-throttling happens in BreadcrumbMap
+
+  const sessionRaw = localStorage.getItem("onsiteWorkerSession");
   let workerEmail = "";
   try {
     const session = sessionRaw ? JSON.parse(sessionRaw) : null;
@@ -20,64 +50,70 @@ const displayedCount = rawCount; // display-throttling happens in BreadcrumbMap
     <div style={{ padding: 16 }}>
       <h2 style={{ marginTop: 0 }}>Supervisor Dashboard</h2>
 
-{workerEmail ? (
-  <div style={{ fontSize: 14, opacity: 0.8, marginTop: 4, marginBottom: 8 }}>
-    Worker: <strong>{workerEmail}</strong>
-  </div>
-) : null}
-<div style={{ fontSize: 14, opacity: 0.8, marginBottom: 8 }}>
-  Breadcrumbs: <strong>{rawCount}</strong> raw /{" "}
-  <strong>{displayedCount}</strong> displayed
-</div>
+      {workerEmail ? (
+        <div style={{ fontSize: 14, opacity: 0.8, marginTop: 4, marginBottom: 8 }}>
+          Worker: <strong>{workerEmail}</strong>
+        </div>
+      ) : null}
 
+      <div style={{ fontSize: 14, opacity: 0.8, marginBottom: 4 }}>
+        Breadcrumbs: <strong>{rawCount}</strong> raw /{" "}
+        <strong>{displayedCount}</strong> displayed
+      </div>
 
-<div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+      {lastBreadcrumbTs ? (
+        <div style={{ fontSize: 13, opacity: 0.7, marginBottom: 8 }}>
+          Last update: {new Date(lastBreadcrumbTs).toLocaleString()}
+        </div>
+      ) : null}
 
-  <button
-    type="button"
-    onClick={() => onBack?.()}
-    style={{
-      padding: "8px 12px",
-      borderRadius: 8,
-      border: "1px solid #ccc",
-      background: "white",
-      cursor: "pointer",
-    }}
-  >
-    ← Back to shift
-  </button>
-<button
-  type="button"
-  onClick={() => {
-    if (!window.confirm("Clear breadcrumbs for this session?")) return;
-    try {
-      const raw = localStorage.getItem("onsiteWorkerSession");
-      const session = raw ? JSON.parse(raw) : {};
-      session.breadcrumbs = [];
-      localStorage.setItem("onsiteWorkerSession", JSON.stringify(session));
-    } catch (e) {
-      // ignore
-    }
-    window.location.reload();
-  }}
->
-  Clear breadcrumbs
-</button>
+      <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+        <button
+          type="button"
+          onClick={() => onBack?.()}
+          style={{
+            padding: "8px 12px",
+            borderRadius: 8,
+            border: "1px solid #ccc",
+            background: "white",
+            cursor: "pointer",
+          }}
+        >
+          ← Back to shift
+        </button>
 
-  <button
-    type="button"
-    onClick={() => onLogout?.()}
-    style={{
-      padding: "8px 12px",
-      borderRadius: 8,
-      border: "1px solid #ccc",
-      background: "white",
-      cursor: "pointer",
-    }}
-  >
-    Log out
-  </button>
-</div>
+        <button
+          type="button"
+          onClick={() => {
+            if (!window.confirm("Clear breadcrumbs for this session?")) return;
+            try {
+              const raw = localStorage.getItem("onsiteWorkerSession");
+              const session = raw ? JSON.parse(raw) : {};
+              session.breadcrumbs = [];
+              localStorage.setItem("onsiteWorkerSession", JSON.stringify(session));
+            } catch (e) {
+              // ignore
+            }
+            window.location.reload();
+          }}
+        >
+          Clear breadcrumbs
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onLogout?.()}
+          style={{
+            padding: "8px 12px",
+            borderRadius: 8,
+            border: "1px solid #ccc",
+            background: "white",
+            cursor: "pointer",
+          }}
+        >
+          Log out
+        </button>
+      </div>
 
       <div style={{ marginBottom: 12 }}>
         <div>
@@ -88,9 +124,7 @@ const displayedCount = rawCount; // display-throttling happens in BreadcrumbMap
         </div>
       </div>
 
-      <BreadcrumbMap breadcrumbs={breadcrumbs} />
-
-      </div>
-    
+      <BreadcrumbMap breadcrumbs={breadcrumbsList} />
+    </div>
   );
 }
