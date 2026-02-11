@@ -25,6 +25,8 @@ function App() {
   const [shiftId, setShiftId] = useState("");
   const [gpsStatus, setGpsStatus] = useState("idle"); // idle | requesting | ok | denied | error
   const [userEmail, setUserEmail] = useState("");
+const [arriveLoading, setArriveLoading] = useState(false);
+const [arriveError, setArriveError] = useState("");
 
   const isAdmin = ADMIN_EMAILS.includes((userEmail || "").toLowerCase());
 
@@ -281,13 +283,17 @@ if (storedLoggedIn && !String(storedEmail).trim()) {
               setCurrentView("selectSite");
             }}
             onArrive={async () => {
+              setArriveError("");
+setArriveLoading(true);
+
               const now = new Date();
               const formatted = now.toLocaleString("en-NZ", {
                 timeZone: "Pacific/Auckland",
                 hour: "2-digit",
                 minute: "2-digit",
                 hour12: false,
-              });
+              }
+            );
 
               setShiftStartTime(formatted);
 
@@ -319,13 +325,18 @@ if (storedLoggedIn && !String(storedEmail).trim()) {
                 const newShiftId = data?.shift?.id || "";
                 setShiftId(newShiftId);
               } catch (e) {
-                console.error("Backend /shifts/start failed:", e);
-                // keep user on Arrive page if shift start fails
-                return;
-              }
+  const msg = String(e?.message || e);
+  console.error("Backend /shifts/start failed:", msg);
+  setArriveError(msg);
+  setArriveLoading(false);
+  return;
+}
+
 
               setCurrentView("onShift");
             }}
+            error={arriveError}
+  loading={arriveLoading}
           />
         )
       ) : (
