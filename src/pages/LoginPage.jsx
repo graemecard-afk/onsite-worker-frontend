@@ -11,8 +11,10 @@ export default function LoginPage({ onLogin }) {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          onLogin?.(email.trim());
-        }}
+          const clean = email.trim();
+if (!clean) return;
+onLogin?.(clean);
+      }}
       >
         <label style={{ display: 'block', marginBottom: '0.5rem' }}>
           Email

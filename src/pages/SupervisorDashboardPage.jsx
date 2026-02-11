@@ -10,6 +10,9 @@ export default function SupervisorDashboardPage({
   const [apiBreadcrumbs, setApiBreadcrumbs] = useState([]);
   const [apiError, setApiError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [activeShifts, setActiveShifts] = useState([]);
+const [selectedShiftId, setSelectedShiftId] = useState("");
+
 
   // Read session once per render (small + safe)
   const session = useMemo(() => {
@@ -22,7 +25,8 @@ export default function SupervisorDashboardPage({
   }, []);
 
   const workerEmail = (session?.userEmail || "").trim();
-  const shiftId = (session?.shiftId || "").trim();
+  const shiftId = (selectedShiftId || session?.shiftId || "").trim();
+
 
   // Decide what to display:
   // 1) If parent passed breadcrumbs prop, use it.
@@ -43,6 +47,31 @@ export default function SupervisorDashboardPage({
   const rawCount = Array.isArray(breadcrumbsList) ? breadcrumbsList.length : 0;
   const lastBreadcrumbTs = rawCount > 0 ? breadcrumbsList[rawCount - 1]?.at : null;
   const displayedCount = rawCount; // display-throttling happens in BreadcrumbMap
+async function fetchActiveShifts(siteId) {
+  const base = import.meta.env.VITE_API_BASE_URL || "";
+  const token = import.meta.env.VITE_SUPERVISOR_TOKEN || "";
+
+  if (!base) throw new Error("Missing VITE_API_BASE_URL");
+  if (!token) throw new Error("Missing VITE_SUPERVISOR_TOKEN");
+
+  const url = `${base.replace(/\/$/, "")}/shifts/active?siteId=${encodeURIComponent(
+    siteId
+  )}`;
+
+  const resp = await fetch(url, {
+    headers: {
+      "x-api-token": token,
+    },
+  });
+
+  const data = await resp.json().catch(() => ({}));
+
+  if (!resp.ok) {
+    throw new Error(data?.error || `Request failed (${resp.status})`);
+  }
+
+  return Array.isArray(data?.shifts) ? data.shifts : [];
+}
 
   async function fetchBreadcrumbsOnce(currentShiftId) {
     const base = import.meta.env.VITE_API_BASE_URL || "";
@@ -75,6 +104,36 @@ export default function SupervisorDashboardPage({
 
     return Array.isArray(data?.breadcrumbs) ? data.breadcrumbs : [];
   }
+  useEffect(() => {
+  const siteId = selectedSite?.id;
+  if (!siteId) return;
+
+  let cancelled = false;
+
+  async function run() {
+    try {
+      const shifts = await fetchActiveShifts(siteId);
+      if (cancelled) return;
+
+      setActiveShifts(shifts);
+
+      // If nothing selected yet, auto-pick the newest active shift
+      if (!selectedShiftId && shifts.length > 0) {
+        setSelectedShiftId(shifts[0].id);
+      }
+    } catch (e) {
+      // Non-fatal: we can still show local breadcrumbs
+      console.error("Fetch active shifts failed:", e);
+    }
+  }
+
+  run();
+
+  return () => {
+    cancelled = true;
+  };
+}, [selectedSite?.id, selectedShiftId]);
+
 
   useEffect(() => {
     // Only fetch if we have a real shiftId in session
@@ -123,16 +182,51 @@ export default function SupervisorDashboardPage({
           Worker: <strong>{workerEmail}</strong>
         </div>
       ) : null}
+<div style={{ padding: 8, marginBottom: 8, border: "2px solid red" }}>
+  DEBUG: SUPERVISOR DROPDOWN BLOCK RENDERING
+</div>
+<div style={{ fontSize: 12, opacity: 0.8, marginBottom: 8 }}>
+  DEBUG siteId: {selectedSite?.id || "—"}
+</div>
 
-      {shiftId ? (
-        <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 8 }}>
-          Shift ID: {shiftId}
-        </div>
-      ) : (
-        <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 8 }}>
-          Shift ID: — (not found in session)
-        </div>
-      )}
+
+      <div style={{ fontSize: 12, opacity: 0.85, marginBottom: 10 }}>
+  <div style={{ marginBottom: 6 }}>
+    <strong>Active shift:</strong>
+  </div>
+
+  {activeShifts.length > 0 ? (
+    <select
+      value={selectedShiftId || ""}
+      onChange={e => setSelectedShiftId(e.target.value)}
+      style={{
+        padding: "6px 8px",
+        borderRadius: 8,
+        border: "1px solid #ccc",
+        background: "white",
+        minWidth: 280,
+      }}
+    >
+      <option value="" disabled>
+        Select a shift…
+      </option>
+      {activeShifts.map(s => (
+        <option key={s.id} value={s.id}>
+          {s.worker_email} — {new Date(s.started_at).toLocaleString()}
+        </option>
+      ))}
+    </select>
+  ) : (
+    <div style={{ fontSize: 12, opacity: 0.7 }}>
+      No active shifts found for this site.
+    </div>
+  )}
+
+  <div style={{ fontSize: 11, opacity: 0.6, marginTop: 6 }}>
+    Shift ID: {shiftId || "—"}
+  </div>
+</div>
+
 
       <div style={{ fontSize: 14, opacity: 0.8, marginBottom: 4 }}>
         Breadcrumbs: <strong>{rawCount}</strong> raw /{" "}
