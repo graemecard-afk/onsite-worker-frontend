@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function ArrivePage({ site, onArrive, onBack, error, loading }) {
+export default function ArrivePage({ site, onArrive, onBack }) {
   return (
     <main style={{ maxWidth: '520px', margin: '0 auto' }}>
       <button type="button" onClick={onBack} style={{ marginBottom: '1rem' }}>
@@ -13,31 +13,23 @@ export default function ArrivePage({ site, onArrive, onBack, error, loading }) {
         <div style={{ fontWeight: 600 }}>{site?.name || 'Unknown site'}</div>
       </div>
 
-      {error ? (
-  <div style={{ marginBottom: 12, color: "crimson", fontSize: 13 }}>
-    {error}
-  </div>
-) : null}
-
-<button
-  type="button"
-  disabled={!!loading}
-  onClick={() => onArrive?.()}
-  style={{
-    width: "100%",
-    padding: "14px",
-    background: loading ? "#999" : "green",
-    color: "white",
-    border: "none",
-    borderRadius: "10px",
-    cursor: loading ? "not-allowed" : "pointer",
-    fontSize: "1.05rem",
-    fontWeight: 700,
-  }}
->
-  {loading ? "Starting shift…" : "Arrive on site"}
-</button>
-
+      <button
+        type="button"
+        onClick={() => onArrive?.()}
+        style={{
+          width: '100%',
+          padding: '14px',
+          background: 'green',
+          color: 'white',
+          border: 'none',
+          borderRadius: '10px',
+          cursor: 'pointer',
+          fontSize: '1.05rem',
+          fontWeight: 700,
+        }}
+      >
+        Arrive on site
+      </button>
 
       <p style={{ marginTop: '1rem', opacity: 0.8 }}>
         This will record your arrival time (and later, your GPS location).
