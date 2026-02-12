@@ -115,7 +115,18 @@ async function fetchActiveShifts(siteId) {
       const shifts = await fetchActiveShifts(siteId);
       if (cancelled) return;
 
-      setActiveShifts(shifts);
+            // Keep only the most recent active shift per worker_email
+      const latestPerWorker = Object.values(
+        shifts.reduce((acc, s) => {
+          if (!acc[s.worker_email]) {
+            acc[s.worker_email] = s;
+          }
+          return acc;
+        }, {})
+      );
+
+      setActiveShifts(latestPerWorker);
+
 
       // If nothing selected yet, auto-pick the newest active shift
       if (!selectedShiftId && shifts.length > 0) {
