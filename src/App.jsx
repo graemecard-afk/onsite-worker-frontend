@@ -253,7 +253,20 @@ if (storedLoggedIn && !String(storedEmail).trim()) {
             setCompletedTasks={setCompletedTasks}
             breadcrumbs={breadcrumbs}
             onSupervisor={isAdmin ? () => setCurrentView("supervisor") : undefined}
-            onSignOut={() => {
+            onSignOut={async() => {
+                            try {
+                const base = import.meta.env.VITE_API_BASE_URL || "";
+                if (base && shiftId) {
+                  await fetch(`${base.replace(/\/$/, "")}/shifts/end`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ shiftId }),
+                  });
+                }
+              } catch (e) {
+                console.error("Backend /shifts/end failed:", e);
+              }
+
               const now = new Date();
               const formatted = now.toLocaleString("en-NZ", {
                 timeZone: "Pacific/Auckland",
