@@ -7,6 +7,9 @@ import SelectSitePage from "./pages/SelectSitePage.jsx";
 import ArrivePage from "./pages/ArrivePage.jsx";
 import OnShiftPage from "./pages/OnShiftPages";
 import SupervisorDashboardPage from "./pages/SupervisorDashboardPage.jsx";
+import ShiftEndedPage from "./pages/ShiftEndedPage.jsx";
+
+
 
 const ADMIN_EMAILS = ["admin@example.com"].map(e => e.toLowerCase());
 
@@ -15,6 +18,7 @@ function App() {
   const [selectedSite, setSelectedSite] = useState(null);
   const [shiftStartTime, setShiftStartTime] = useState("");
   const [shiftEndTime, setShiftEndTime] = useState("");
+    const [shiftEndedInfo, setShiftEndedInfo] = useState(null);
   const [currentView, setCurrentView] = useState("login");
   const [hydrated, setHydrated] = useState(false);
 
@@ -65,6 +69,8 @@ if (storedLoggedIn && !String(storedEmail).trim()) {
         if (Array.isArray(s?.breadcrumbs)) setBreadcrumbs(s.breadcrumbs);
         if (typeof s?.shiftId === "string") setShiftId(s.shiftId);
         if (typeof s?.gpsStatus === "string") setGpsStatus(s.gpsStatus);
+                if (s?.shiftEndedInfo) setShiftEndedInfo(s.shiftEndedInfo);
+
       }
     } catch {
       // ignore bad storage
@@ -88,6 +94,8 @@ if (storedLoggedIn && !String(storedEmail).trim()) {
         breadcrumbs,
         shiftId,
         gpsStatus,
+                shiftEndedInfo,
+
       };
       localStorage.setItem("onsiteWorkerSession", JSON.stringify(session));
     } catch {
@@ -105,6 +113,7 @@ if (storedLoggedIn && !String(storedEmail).trim()) {
     breadcrumbs,
     shiftId,
     gpsStatus,
+    shiftEndedInfo,
   ]);
 
   // ---- prevent non-admins entering supervisor view (without setting state during render) ----
@@ -182,6 +191,60 @@ if (storedLoggedIn && !String(storedEmail).trim()) {
 
     return () => navigator.geolocation.clearWatch(watchId);
   }, [currentView, shiftId]);
+  // ---- reconcile shift status every 5 minutes while on shift ----
+  useEffect(() => {
+    if (!hydrated) return;
+    if (currentView !== "onShift") return;
+    if (!shiftId) return;
+    if (!userEmail) return;
+
+    let cancelled = false;
+
+    async function checkStatusOnce() {
+      try {
+        const base = import.meta.env.VITE_API_BASE_URL || "";
+        if (!base) return;
+
+        const url = `${base.replace(/\/$/, "")}/shifts/status?shiftId=${encodeURIComponent(
+          shiftId
+        )}&workerEmail=${encodeURIComponent(String(userEmail).trim().toLowerCase())}`;
+
+        const resp = await fetch(url);
+        const data = await resp.json().catch(() => ({}));
+        if (!resp.ok) return;
+
+        const endedAt = data?.shift?.ended_at;
+        if (endedAt && !cancelled) {
+          // Supervisor/admin override detected
+          setGpsStatus("idle");
+          setActiveTask(null);
+
+          setShiftEndedInfo({
+            endedBy: "supervisor",
+            siteName: selectedSite?.name || "",
+            startedAt: data?.shift?.started_at || "",
+            endedAt: endedAt,
+          });
+
+          setShiftId("");
+          setShiftStartTime("");
+          setCurrentView("shiftEnded");
+        }
+      } catch {
+        // ignore transient errors
+      }
+    }
+
+    // check immediately on entry
+    checkStatusOnce();
+
+    const id = setInterval(checkStatusOnce, 5 * 60 * 1000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [hydrated, currentView, shiftId, userEmail, selectedSite]);
 
   // ---- logout helper ----
   const doLogout = () => {
@@ -287,8 +350,21 @@ if (storedLoggedIn && !String(storedEmail).trim()) {
               localStorage.removeItem("onsiteWorkerSession");
             }}
           />
+               ) : currentView === "shiftEnded" ? (
+          <ShiftEndedPage
+            info={shiftEndedInfo}
+            onBackToSites={() => {
+              setShiftEndedInfo(null);
+              setActiveTask(null);
+              setCompletedTasks([]);
+              setBreadcrumbs([]);
+              setSelectedSite(null);
+              setCurrentView("selectSite");
+            }}
+          />
         ) : (
           <ArrivePage
+
             site={selectedSite}
             onBack={() => {
               setSelectedSite(null);
