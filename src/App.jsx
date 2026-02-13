@@ -342,12 +342,18 @@ if (storedLoggedIn && !String(storedEmail).trim()) {
               setShiftEndTime(formatted);
 
               // front-end "sign out" ends session state
-              setShiftStartTime("");
-              setShiftId("");
-              setCurrentView("selectSite");
-              setSelectedSite(null);
+setActiveTask(null);
+setCompletedTasks([]);   // clear shift tasks
+setBreadcrumbs([]);      // clear shift breadcrumbs
 
-              localStorage.removeItem("onsiteWorkerSession");
+setShiftStartTime("");
+setShiftId("");
+setSelectedSite(null);
+setCurrentView("selectSite");
+
+localStorage.removeItem("onsiteWorkerSession");
+
+
             }}
           />
                ) : currentView === "shiftEnded" ? (
