@@ -7,6 +7,7 @@ import GpsBreadcrumbs from "../components/GpsBreadcrumbs.jsx";
 export default function OnShiftPage({
   theme,
   siteName,
+  userEmail,
   shiftStartTimeText,
   onSignOut,
 onSupervisor,
@@ -128,6 +129,9 @@ useEffect(() => {
         <p style={bigStyle}>
           {siteName ? siteName : "Unknown site"}
         </p>
+<div style={subStyle}>
+  Logged in as: <strong>{userEmail || "—"}</strong>
+</div>
 
                 <div style={subStyle}>
           On site since{" "}

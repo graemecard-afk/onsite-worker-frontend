@@ -246,6 +246,7 @@ if (storedLoggedIn && !String(storedEmail).trim()) {
         ) : currentView === "onShift" ? (
           <OnShiftPage
             siteName={selectedSite?.name}
+            userEmail={userEmail}
             shiftStartTimeText={shiftStartTime}
             activeTask={activeTask}
             setActiveTask={setActiveTask}
