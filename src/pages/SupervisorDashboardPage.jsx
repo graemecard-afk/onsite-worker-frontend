@@ -467,13 +467,13 @@ async function fetchActiveShifts(siteId) {
         </div>
         <div>
   <strong>Status:</strong>{" "}
-  {trackingLikelyPaused || hasBigGaps ? (
+  {trackingLikelyPaused ? (
     <span style={{ padding: "2px 8px", borderRadius: 999, border: "1px solid #cc0000", color: "#cc0000" }}>
       Tracking likely paused
     </span>
   ) : (
     <span style={{ padding: "2px 8px", borderRadius: 999, border: "1px solid #0a7a0a", color: "#0a7a0a" }}>
-      Tracking healthy
+      {hasBigGaps ? "Tracking resumed (gaps detected)" : "Tracking healthy"}
     </span>
   )}
 </div>
