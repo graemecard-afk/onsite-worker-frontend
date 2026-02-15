@@ -17,6 +17,7 @@ function App() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [selectedSite, setSelectedSite] = useState(null);
   const [shiftStartTime, setShiftStartTime] = useState("");
+  const [shiftStartedAtIso, setShiftStartedAtIso] = useState("");
   const [shiftEndTime, setShiftEndTime] = useState("");
     const [shiftEndedInfo, setShiftEndedInfo] = useState(null);
   const [currentView, setCurrentView] = useState("login");
@@ -311,6 +312,7 @@ if (storedLoggedIn && !String(storedEmail).trim()) {
             siteName={selectedSite?.name}
             userEmail={userEmail}
             shiftStartTimeText={shiftStartTime}
+            shiftStartedAtIso={shiftStartedAtIso}
             activeTask={activeTask}
             setActiveTask={setActiveTask}
             completedTasks={completedTasks}
@@ -378,6 +380,7 @@ localStorage.removeItem("onsiteWorkerSession");
             }}
             onArrive={async () => {
               const now = new Date();
+              setShiftStartedAtIso(now.toISOString());
               const formatted = now.toLocaleString("en-NZ", {
                 timeZone: "Pacific/Auckland",
                 hour: "2-digit",
