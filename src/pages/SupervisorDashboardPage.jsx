@@ -123,17 +123,18 @@ async function refreshActiveShiftsNow() {
   // 1) If parent passed breadcrumbs prop, use it.
   // 2) Else if we fetched from API, use that.
   // 3) Else fallback to persisted session breadcrumbs.
-  let breadcrumbsList = breadcrumbs;
+ let breadcrumbsList = [];
 
-  if (!Array.isArray(breadcrumbsList) || breadcrumbsList.length === 0) {
-    if (Array.isArray(apiBreadcrumbs) && apiBreadcrumbs.length > 0) {
-      breadcrumbsList = apiBreadcrumbs;
-    } else if (Array.isArray(session?.breadcrumbs)) {
-      breadcrumbsList = session.breadcrumbs;
-    } else {
-      breadcrumbsList = [];
-    }
-  }
+if (shiftId) {
+  breadcrumbsList = Array.isArray(apiBreadcrumbs) ? apiBreadcrumbs : [];
+} else if (Array.isArray(breadcrumbs) && breadcrumbs.length > 0) {
+  breadcrumbsList = breadcrumbs;
+} else if (Array.isArray(session?.breadcrumbs)) {
+  breadcrumbsList = session.breadcrumbs;
+} else {
+  breadcrumbsList = [];
+}
+
 
   const rawCount = Array.isArray(breadcrumbsList) ? breadcrumbsList.length : 0;
   const lastBreadcrumbTs = rawCount > 0 ? breadcrumbsList[rawCount - 1]?.at : null;
