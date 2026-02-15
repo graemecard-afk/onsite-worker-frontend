@@ -12,6 +12,8 @@ export default function SupervisorDashboardPage({
   const [isLoading, setIsLoading] = useState(false);
   const [activeShifts, setActiveShifts] = useState([]);
 const [selectedShiftId, setSelectedShiftId] = useState("");
+const [ending, setEnding] = useState(false);
+const [endMsg, setEndMsg] = useState("");
 
 
   // Read session once per render (small + safe)
@@ -26,6 +28,95 @@ const [selectedShiftId, setSelectedShiftId] = useState("");
 
   const workerEmail = (session?.userEmail || "").trim();
   const shiftId = (selectedShiftId || session?.shiftId || "").trim();
+async function forceEndSelectedShift() {
+  const currentShiftId = (shiftId || "").trim();
+  const base = import.meta.env.VITE_API_BASE_URL || "";
+const token = import.meta.env.VITE_SUPERVISOR_TOKEN || "";
+
+if (!base) {
+  setEndMsg("Missing VITE_API_BASE_URL");
+  return;
+}
+
+if (!token) {
+  setEndMsg("Missing VITE_SUPERVISOR_TOKEN");
+  return;
+}
+
+
+  if (!currentShiftId) {
+    setEndMsg("No shift selected.");
+    return;
+  }
+
+  const ok = window.confirm(
+    `Force end shift?\n\nShift ID: ${currentShiftId}`
+  );
+  if (!ok) return;
+
+  setEnding(true);
+  setEndMsg("");
+
+  try {
+   const url = `${base.replace(/\/$/, "")}/shifts/end`;
+
+
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-token": token,
+      },
+      body: JSON.stringify({ shiftId: currentShiftId }),
+    });
+
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      const msg =
+        data?.error || data?.message || `HTTP ${res.status}`;
+      throw new Error(msg);
+    }
+
+    const endedAt = data?.shift?.ended_at || "";
+    setEndMsg(
+      endedAt ? `Ended at ${endedAt}` : "Shift ended."
+    );
+
+  } catch (e) {
+    setEndMsg(
+      `Force end failed: ${e?.message || String(e)}`
+    );
+  } finally {
+    setEnding(false);
+  }
+}
+async function refreshActiveShiftsNow() {
+  const siteId = selectedSite?.id;
+  if (!siteId) {
+    setEndMsg("Select a site first.");
+    return;
+  }
+
+  try {
+    const shifts = await fetchActiveShifts(siteId);
+
+    const latestPerWorker = Object.values(
+      shifts.reduce((acc, s) => {
+        if (!acc[s.worker_email]) acc[s.worker_email] = s;
+        return acc;
+      }, {})
+    );
+
+    setActiveShifts(latestPerWorker);
+
+    if (shifts.length > 0 && !selectedShiftId) {
+      setSelectedShiftId(shifts[0].id);
+    }
+  } catch (e) {
+    setEndMsg(`Refresh failed: ${e?.message || String(e)}`);
+  }
+}
 
 
   // Decide what to display:
@@ -143,7 +234,8 @@ async function fetchActiveShifts(siteId) {
   return () => {
     cancelled = true;
   };
-}, [selectedSite?.id, selectedShiftId]);
+}, [selectedSite?.id]);
+
 
 
   useEffect(() => {
@@ -207,6 +299,7 @@ async function fetchActiveShifts(siteId) {
   </div>
 
   {activeShifts.length > 0 ? (
+    
     <select
       value={selectedShiftId || ""}
       onChange={e => setSelectedShiftId(e.target.value)}
@@ -236,6 +329,27 @@ async function fetchActiveShifts(siteId) {
   <div style={{ fontSize: 11, opacity: 0.6, marginTop: 6 }}>
     Shift ID: {shiftId || "—"}
   </div>
+  <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 10 }}>
+  <button
+    onClick={forceEndSelectedShift}
+    disabled={!shiftId || ending}
+    style={{
+      padding: "8px 10px",
+      borderRadius: 8,
+      border: "1px solid #ccc",
+      cursor: !shiftId || ending ? "not-allowed" : "pointer",
+      opacity: !shiftId || ending ? 0.6 : 1,
+      fontWeight: 600,
+    }}
+  >
+    {ending ? "Ending…" : "Force end selected shift"}
+  </button>
+
+  {endMsg ? (
+    <span style={{ fontSize: 12, opacity: 0.8 }}>{endMsg}</span>
+  ) : null}
+</div>
+
 </div>
 
 
