@@ -139,6 +139,45 @@ if (shiftId) {
   const rawCount = Array.isArray(breadcrumbsList) ? breadcrumbsList.length : 0;
   const lastBreadcrumbTs = rawCount > 0 ? breadcrumbsList[rawCount - 1]?.at : null;
   const displayedCount = rawCount; // display-throttling happens in BreadcrumbMap
+// --- Breadcrumb gap auditing (detect likely phone sleep / app background) ---
+const GAP_THRESHOLD_MINUTES = 8;
+
+const breadcrumbStats = (() => {
+  if (!Array.isArray(breadcrumbsList) || breadcrumbsList.length < 2) {
+    return { maxGapMin: 0, gapCount: 0, lastAgeMin: null };
+  }
+
+  // Ensure chronological order just in case
+  const times = breadcrumbsList
+    .map((b) => (b?.at ? new Date(b.at).getTime() : NaN))
+    .filter((t) => Number.isFinite(t))
+    .sort((a, b) => a - b);
+
+  if (times.length < 2) return { maxGapMin: 0, gapCount: 0, lastAgeMin: null };
+
+  let maxGapMin = 0;
+  let gapCount = 0;
+
+  for (let i = 1; i < times.length; i++) {
+    const gapMin = (times[i] - times[i - 1]) / 60000;
+    if (gapMin > maxGapMin) maxGapMin = gapMin;
+    if (gapMin >= GAP_THRESHOLD_MINUTES) gapCount++;
+  }
+
+  const lastAgeMin = (Date.now() - times[times.length - 1]) / 60000;
+
+  return {
+    maxGapMin: Math.round(maxGapMin),
+    gapCount,
+    lastAgeMin: Math.max(0, Math.round(lastAgeMin)),
+  };
+})();
+const trackingLikelyPaused =
+  breadcrumbStats.lastAgeMin !== null && breadcrumbStats.lastAgeMin >= GAP_THRESHOLD_MINUTES;
+
+const hasBigGaps = breadcrumbStats.gapCount > 0;
+
+
 async function fetchActiveShifts(siteId) {
   const base = import.meta.env.VITE_API_BASE_URL || "";
   const token = import.meta.env.VITE_SUPERVISOR_TOKEN || "";
@@ -426,6 +465,28 @@ async function fetchActiveShifts(siteId) {
         <div>
           <strong>Breadcrumb points:</strong> {rawCount}
         </div>
+        <div>
+  <strong>Status:</strong>{" "}
+  {trackingLikelyPaused || hasBigGaps ? (
+    <span style={{ padding: "2px 8px", borderRadius: 999, border: "1px solid #cc0000", color: "#cc0000" }}>
+      Tracking likely paused
+    </span>
+  ) : (
+    <span style={{ padding: "2px 8px", borderRadius: 999, border: "1px solid #0a7a0a", color: "#0a7a0a" }}>
+      Tracking healthy
+    </span>
+  )}
+</div>
+
+        <div>
+  <strong>Last breadcrumb:</strong>{" "}
+  {breadcrumbStats.lastAgeMin === null ? "—" : `${breadcrumbStats.lastAgeMin} min ago`}
+</div>
+<div>
+  <strong>Gaps ≥ {GAP_THRESHOLD_MINUTES} min:</strong> {breadcrumbStats.gapCount}{" "}
+  {breadcrumbStats.gapCount ? `(max gap ${breadcrumbStats.maxGapMin} min)` : ""}
+</div>
+
       </div>
 
       <BreadcrumbMap breadcrumbs={breadcrumbsList} />
