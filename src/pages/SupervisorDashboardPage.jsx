@@ -286,12 +286,6 @@ async function fetchActiveShifts(siteId) {
           Worker: <strong>{workerEmail}</strong>
         </div>
       ) : null}
-<div style={{ padding: 8, marginBottom: 8, border: "2px solid red" }}>
-  DEBUG: SUPERVISOR DROPDOWN BLOCK RENDERING
-</div>
-<div style={{ fontSize: 12, opacity: 0.8, marginBottom: 8 }}>
-  DEBUG siteId: {selectedSite?.id || "—"}
-</div>
 
 
       <div style={{ fontSize: 12, opacity: 0.85, marginBottom: 10 }}>
