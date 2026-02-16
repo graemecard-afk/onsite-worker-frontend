@@ -3,18 +3,47 @@ import React, { useState } from "react";
 
 export default function LoginPage({ onLogin }) {
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
 
   return (
     <main style={{ maxWidth: '360px', margin: '0 auto' }}>
       <h2>Contractor Login</h2>
 
       <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          const clean = email.trim();
-if (!clean) return;
-onLogin?.(clean);
-      }}
+        onSubmit={async (e) => {
+  e.preventDefault();
+
+  const cleanEmail = email.trim().toLowerCase();
+  if (!cleanEmail || !password) return;
+
+  try {
+    const base = import.meta.env.VITE_API_BASE_URL || "";
+    if (!base) throw new Error("Missing VITE_API_BASE_URL");
+
+    const resp = await fetch(`${base.replace(/\/$/, "")}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: cleanEmail,
+        password,
+      }),
+    });
+
+    const data = await resp.json();
+
+    if (!resp.ok) {
+      alert(data?.error || "Login failed");
+      return;
+    }
+
+    onLogin?.(data.token, data.user);
+  } catch (err) {
+    console.error("Login failed:", err);
+    alert("Login failed");
+  }
+}}
+
       >
         <label style={{ display: 'block', marginBottom: '0.5rem' }}>
           Email
@@ -30,10 +59,13 @@ onChange={(e) => setEmail(e.target.value)}
         <label style={{ display: 'block', marginBottom: '1rem' }}>
           Password
           <input
-            type="password"
-            placeholder="••••••••"
-            style={{ width: '100%', padding: '8px', marginTop: '4px' }}
-          />
+  type="password"
+  placeholder="••••••••"
+  style={{ width: '100%', padding: '8px', marginTop: '4px' }}
+  value={password}
+  onChange={(e) => setPassword(e.target.value)}
+/>
+
         </label>
 
         <button

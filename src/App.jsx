@@ -30,6 +30,8 @@ function App() {
   const [shiftId, setShiftId] = useState("");
   const [gpsStatus, setGpsStatus] = useState("idle"); // idle | requesting | ok | denied | error
   const [userEmail, setUserEmail] = useState("");
+  const [authToken, setAuthToken] = useState("");
+
 
   const isAdmin = ADMIN_EMAILS.includes((userEmail || "").toLowerCase());
 
@@ -273,32 +275,29 @@ if (storedLoggedIn && !String(storedEmail).trim()) {
         <div style={{ textAlign: "center", padding: 24 }}>Loading...</div>
       ) : !loggedIn ? (
         <LoginPage
-          onLogin={(email) => {
- 
+  onLogin={(token, user) => {
+    if (!token || !user?.email) {
+      alert("Invalid login response");
+      return;
+    }
 
-  const clean = String(email || "").trim().toLowerCase();
-  
+    setAuthToken(token);
+    setUserEmail(String(user.email).trim().toLowerCase());
+    setLoggedIn(true);
 
-  if (!clean) {
-    alert("Please enter an email address.");
-    return;
-  }
-
-  setUserEmail(clean);
-  setLoggedIn(true);
-
-  // fresh start for new login
-  setSelectedSite(null);
-  setShiftStartTime("");
-  setShiftEndTime("");
-  setActiveTask(null);
-  setCompletedTasks([]);
-  setBreadcrumbs([]);
-  setShiftId("");
-  setGpsStatus("idle");
-  setCurrentView("selectSite");
-}}
+    // fresh start for new login
+    setSelectedSite(null);
+    setShiftStartTime("");
+    setShiftEndTime("");
+    setActiveTask(null);
+    setCompletedTasks([]);
+    setBreadcrumbs([]);
+    setShiftId("");
+    setGpsStatus("idle");
+    setCurrentView("selectSite");
+  }}
 />
+
       ) : selectedSite ? (
         currentView === "supervisor" ? (
           <SupervisorDashboardPage
@@ -394,21 +393,23 @@ localStorage.removeItem("onsiteWorkerSession");
                 const base = import.meta.env.VITE_API_BASE_URL || "";
                 if (!base) throw new Error("Missing VITE_API_BASE_URL");
 
-                const cleanEmail = String(userEmail || "").trim().toLowerCase();
-                const siteId = selectedSite?.id || "";
+                                  const siteId = selectedSite?.id || "";
 
-                if (!siteId || !cleanEmail) {
-                  throw new Error(`Missing siteId or workerEmail (siteId="${siteId}", email="${cleanEmail}")`);
-                }
+                  if (!siteId || !authToken) {
+                    throw new Error(
+                      `Missing siteId or authToken (siteId="${siteId}", hasToken=${Boolean(authToken)})`
+                    );
+                  }
 
-                const resp = await fetch(`${base.replace(/\/$/, "")}/shifts/start`, {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    siteId,
-                    workerEmail: cleanEmail,
-                  }),
-                });
+                  const resp = await fetch(`${base.replace(/\/$/, "")}/shifts/start`, {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                      Authorization: `Bearer ${authToken}`,
+                    },
+                    body: JSON.stringify({ siteId }),
+                  });
+
 
                 const data = await resp.json().catch(() => ({}));
                 if (!resp.ok) {
