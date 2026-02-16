@@ -31,9 +31,10 @@ function App() {
   const [gpsStatus, setGpsStatus] = useState("idle"); // idle | requesting | ok | denied | error
   const [userEmail, setUserEmail] = useState("");
   const [authToken, setAuthToken] = useState("");
+  const [userRole, setUserRole] = useState("");
 
+  const isAdmin = userRole === "admin";
 
-  const isAdmin = ADMIN_EMAILS.includes((userEmail || "").toLowerCase());
 
   // ---- hydrate from localStorage once ----
   useEffect(() => {
@@ -62,6 +63,7 @@ if (storedLoggedIn && !String(storedEmail).trim()) {
 } else {
   if (storedLoggedIn) setLoggedIn(true);
   if (typeof s?.userEmail === "string") setUserEmail(s.userEmail);
+  if (typeof s?.userRole === "string") setUserRole(s.userRole);
 }
 
         if (s?.selectedSite) setSelectedSite(s.selectedSite);
@@ -283,6 +285,7 @@ if (storedLoggedIn && !String(storedEmail).trim()) {
 
     setAuthToken(token);
     setUserEmail(String(user.email).trim().toLowerCase());
+    setUserRole(user.role);
     setLoggedIn(true);
 
     // fresh start for new login
