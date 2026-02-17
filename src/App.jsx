@@ -111,6 +111,7 @@ if (storedLoggedIn && !String(storedEmail).trim()) {
     hydrated,
     loggedIn,
     userEmail,
+    authToken,
     selectedSite,
     shiftStartTime,
     currentView,
