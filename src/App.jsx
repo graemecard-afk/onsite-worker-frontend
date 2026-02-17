@@ -202,7 +202,7 @@ if (storedLoggedIn && !String(storedEmail).trim()) {
     if (!hydrated) return;
     if (currentView !== "onShift") return;
     if (!shiftId) return;
-    if (!userEmail) return;
+  
 
     let cancelled = false;
 
@@ -210,12 +210,15 @@ if (storedLoggedIn && !String(storedEmail).trim()) {
       try {
         const base = import.meta.env.VITE_API_BASE_URL || "";
         if (!base) return;
+      if (!authToken) return;
 
-        const url = `${base.replace(/\/$/, "")}/shifts/status?shiftId=${encodeURIComponent(
-          shiftId
-        )}&workerEmail=${encodeURIComponent(String(userEmail).trim().toLowerCase())}`;
+        const url = `${base.replace(/\/$/, "")}/shifts/status?shiftId=${encodeURIComponent(shiftId)}`;
+        const resp = await fetch(url, {
+  headers: {
+    Authorization: `Bearer ${authToken}`,
+  },
+});
 
-        const resp = await fetch(url);
         const data = await resp.json().catch(() => ({}));
         if (!resp.ok) return;
 
