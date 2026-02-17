@@ -169,7 +169,10 @@ if (storedLoggedIn && !String(storedEmail).trim()) {
 
             fetch(`${base.replace(/\/$/, "")}/breadcrumbs`, {
               method: "POST",
-              headers: { "Content-Type": "application/json" },
+              headers: {
+  "Content-Type": "application/json",
+  ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+},
               body: JSON.stringify({
                 shiftId,
                 at: point.at,
