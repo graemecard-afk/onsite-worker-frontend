@@ -89,19 +89,20 @@ if (storedLoggedIn && !String(storedEmail).trim()) {
     if (!hydrated) return;
     try {
       const session = {
-        loggedIn,
-        userEmail,
-        selectedSite,
-        shiftStartTime,
-        currentView,
-        activeTask,
-        completedTasks,
-        breadcrumbs,
-        shiftId,
-        gpsStatus,
-                shiftEndedInfo,
+  loggedIn,
+  userEmail,
+  authToken,
+  selectedSite,
+  shiftStartTime,
+  currentView,
+  activeTask,
+  completedTasks,
+  breadcrumbs,
+  shiftId,
+  gpsStatus,
+  shiftEndedInfo,
+};
 
-      };
       localStorage.setItem("onsiteWorkerSession", JSON.stringify(session));
     } catch {
       // ignore storage errors
