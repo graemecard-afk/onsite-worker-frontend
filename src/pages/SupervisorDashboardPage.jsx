@@ -31,7 +31,7 @@ const [endMsg, setEndMsg] = useState("");
 async function forceEndSelectedShift() {
   const currentShiftId = (shiftId || "").trim();
   const base = import.meta.env.VITE_API_BASE_URL || "";
-const token = import.meta.env.VITE_SUPERVISOR_TOKEN || "";
+const token = (session?.authToken || "").trim();
 
 if (!base) {
   setEndMsg("Missing VITE_API_BASE_URL");
@@ -39,7 +39,7 @@ if (!base) {
 }
 
 if (!token) {
-  setEndMsg("Missing VITE_SUPERVISOR_TOKEN");
+ setEndMsg("Missing auth token (please log in again)");
   return;
 }
 
@@ -65,7 +65,7 @@ if (!token) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-api-token": token,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ shiftId: currentShiftId }),
     });
@@ -180,10 +180,10 @@ const hasBigGaps = breadcrumbStats.gapCount > 0;
 
 async function fetchActiveShifts(siteId) {
   const base = import.meta.env.VITE_API_BASE_URL || "";
-  const token = import.meta.env.VITE_SUPERVISOR_TOKEN || "";
+  const token = (session?.authToken || "").trim();
 
   if (!base) throw new Error("Missing VITE_API_BASE_URL");
-  if (!token) throw new Error("Missing VITE_SUPERVISOR_TOKEN");
+  if (!token) throw new Error("Missing auth token (please log in again)");
 
   const url = `${base.replace(/\/$/, "")}/shifts/active?siteId=${encodeURIComponent(
     siteId
@@ -191,8 +191,8 @@ async function fetchActiveShifts(siteId) {
 
   const resp = await fetch(url, {
     headers: {
-      "x-api-token": token,
-    },
+  Authorization: `Bearer ${token}`,
+},
   });
 
   const data = await resp.json().catch(() => ({}));
