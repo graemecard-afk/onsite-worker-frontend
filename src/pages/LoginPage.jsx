@@ -81,6 +81,22 @@ onChange={(e) => setEmail(e.target.value)}
         >
           Log in
         </button>
+        <div style={{ marginTop: "1rem", fontSize: "0.9rem" }}>
+  <p style={{ margin: "0 0 0.5rem 0" }}>
+    <strong>Forgot your password?</strong>
+  </p>
+  <p style={{ margin: "0 0 0.5rem 0" }}>
+    Please contact the system administrator to reset your password.
+  </p>
+  <p style={{ margin: 0 }}>
+    📧{" "}
+    <a href="mailto:graeme.card@gdc.govt.nz?subject=Onsite%20Worker%20Password%20Reset">
+      graeme.card@gdc.govt.nz
+    </a>
+    <br />
+    📞 Contact your supervisor directly if urgent.
+  </p>
+</div>
       </form>
     </main>
   );
