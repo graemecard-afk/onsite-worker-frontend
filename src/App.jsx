@@ -68,6 +68,7 @@ if (storedLoggedIn && !String(storedEmail).trim()) {
 
         if (s?.selectedSite) setSelectedSite(s.selectedSite);
         if (typeof s?.shiftStartTime === "string") setShiftStartTime(s.shiftStartTime);
+        if (typeof s?.shiftStartedAtIso === "string") setShiftStartedAtIso(s.shiftStartedAtIso);
         if (typeof s?.currentView === "string") setCurrentView(s.currentView);
         if (s?.activeTask) setActiveTask(s.activeTask);
         if (Array.isArray(s?.completedTasks)) setCompletedTasks(s.completedTasks);
@@ -94,6 +95,7 @@ if (storedLoggedIn && !String(storedEmail).trim()) {
   authToken,
   selectedSite,
   shiftStartTime,
+  shiftStartedAtIso,
   currentView,
   activeTask,
   completedTasks,
@@ -114,6 +116,7 @@ if (storedLoggedIn && !String(storedEmail).trim()) {
     authToken,
     selectedSite,
     shiftStartTime,
+    shiftStartedAtIso,
     currentView,
     activeTask,
     completedTasks,
