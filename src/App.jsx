@@ -308,7 +308,7 @@ if (storedLoggedIn && !String(storedEmail).trim()) {
     setBreadcrumbs([]);
     setShiftId("");
     setGpsStatus("idle");
-    setCurrentView("selectSite");
+    setCurrentView(user.role === "admin" ? "supervisor" : "selectSite");
   }}
 />
 
