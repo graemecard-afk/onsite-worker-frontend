@@ -14,6 +14,14 @@ export default function SupervisorDashboardPage({
 const [selectedShiftId, setSelectedShiftId] = useState("");
 const [ending, setEnding] = useState(false);
 const [endMsg, setEndMsg] = useState("");
+const SITE_OPTIONS = [
+  { id: "", name: "All sites" },
+  { id: "waiapu", name: "Waiapu" },
+  { id: "paokahu", name: "Paokahu" },
+];
+
+const [siteFilter, setSiteFilter] = useState(selectedSite?.id || "");
+
 
 
   // Read session once per render (small + safe)
@@ -232,9 +240,9 @@ async function fetchActiveShifts(siteId) {
   if (!base) throw new Error("Missing VITE_API_BASE_URL");
   if (!token) throw new Error("Missing auth token (please log in again)");
 
-  const url = `${base.replace(/\/$/, "")}/shifts/active?siteId=${encodeURIComponent(
-    siteId
-  )}`;
+  const url = siteId
+  ? `${base.replace(/\/$/, "")}/shifts/active?siteId=${encodeURIComponent(siteId)}`
+  : `${base.replace(/\/$/, "")}/shifts/active`;
 
   const resp = await fetch(url, {
     headers: {
@@ -253,25 +261,25 @@ async function fetchActiveShifts(siteId) {
 
   async function fetchBreadcrumbsOnce(currentShiftId) {
     const base = import.meta.env.VITE_API_BASE_URL || "";
-    const token = import.meta.env.VITE_SUPERVISOR_TOKEN || "";
+    const token = (session?.authToken || "").trim();
 
-    if (!base) {
-      throw new Error("Missing VITE_API_BASE_URL");
-    }
-    if (!token) {
-      throw new Error("Missing VITE_SUPERVISOR_TOKEN");
-    }
+if (!base) {
+  throw new Error("Missing VITE_API_BASE_URL");
+}
+if (!token) {
+  throw new Error("Missing auth token (please log in again)");
+}
 
-    const url = `${base.replace(/\/$/, "")}/breadcrumbs?shiftId=${encodeURIComponent(
-      currentShiftId
-    )}`;
+const url = `${base.replace(/\/$/, "")}/breadcrumbs?shiftId=${encodeURIComponent(
+  currentShiftId
+)}`;
 
-    const resp = await fetch(url, {
-      method: "GET",
-      headers: {
-        "x-api-token": token,
-      },
-    });
+const resp = await fetch(url, {
+  method: "GET",
+  headers: {
+    Authorization: `Bearer ${token}`,
+  },
+});
 
     const data = await resp.json().catch(() => ({}));
 
