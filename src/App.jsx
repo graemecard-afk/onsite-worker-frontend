@@ -64,6 +64,7 @@ if (storedLoggedIn && !String(storedEmail).trim()) {
   if (storedLoggedIn) setLoggedIn(true);
   if (typeof s?.userEmail === "string") setUserEmail(s.userEmail);
   if (typeof s?.userRole === "string") setUserRole(s.userRole);
+  if (typeof s?.authToken === "string") setAuthToken(s.authToken);
 }
 
         if (s?.selectedSite) setSelectedSite(s.selectedSite);
@@ -92,6 +93,7 @@ if (storedLoggedIn && !String(storedEmail).trim()) {
       const session = {
   loggedIn,
   userEmail,
+  userRole,
   authToken,
   selectedSite,
   shiftStartTime,
