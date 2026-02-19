@@ -442,16 +442,23 @@ localStorage.removeItem("onsiteWorkerSession");
             }}
           />
         )
-      ) : (
-        <SelectSitePage
-          sites={sites}
-          onSelectSite={site => {
-            setSelectedSite(site);
-            setCurrentView("arrive");
-          }}
-          onLogout={doLogout}
-        />
-      )}
+      ) : currentView === "supervisor" ? (
+  <SupervisorDashboardPage
+    selectedSite={selectedSite}
+    breadcrumbs={breadcrumbs}
+    onBack={() => setCurrentView("selectSite")}
+    onLogout={doLogout}
+  />
+) : (
+  <SelectSitePage
+    sites={sites}
+    onSelectSite={(site) => {
+      setSelectedSite(site);
+      setCurrentView("arrive");
+    }}
+    onLogout={doLogout}
+  />
+)}
     </>
   );
 }
