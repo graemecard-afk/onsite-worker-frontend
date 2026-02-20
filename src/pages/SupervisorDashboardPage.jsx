@@ -404,7 +404,7 @@ const resp = await fetch(url, {
       </option>
       {activeShifts.map(s => (
         <option key={s.id} value={s.id}>
-          {s.worker_email} — {new Date(s.started_at).toLocaleString()}
+          {s.worker_email} — {s.site_id} — {new Date(s.started_at).toLocaleString()}
         </option>
       ))}
     </select>
