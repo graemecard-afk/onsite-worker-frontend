@@ -82,13 +82,34 @@ export default function LoginPage({ onLogin }) {
         <button
           type="button"
           onClick={async () => {
-            try {
-              await callAuth("/auth/register");
-            } catch (err) {
-              console.error("Register failed:", err);
-              alert("Register failed");
-            }
-          }}
+  try {
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail || !password) return;
+
+    const base = import.meta.env.VITE_API_BASE_URL || "";
+    if (!base) throw new Error("Missing VITE_API_BASE_URL");
+
+    // Register (do NOT attempt login from this response)
+    const regResp = await fetch(`${base.replace(/\/$/, "")}/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: cleanEmail, password }),
+    });
+
+    const regData = await regResp.json();
+
+    if (!regResp.ok) {
+      alert(regData?.error || "Registration failed");
+      return;
+    }
+
+    // Now perform proper login to get token + user
+    await callAuth("/auth/login");
+  } catch (err) {
+    console.error("Register failed:", err);
+    alert("Register failed");
+  }
+}}
           style={{
             width: "100%",
             padding: "10px",
