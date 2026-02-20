@@ -12,6 +12,7 @@ export default function SupervisorDashboardPage({
   const [isLoading, setIsLoading] = useState(false);
   const [activeShifts, setActiveShifts] = useState([]);
 const [selectedShiftId, setSelectedShiftId] = useState("");
+const [siteFilter, setSiteFilter] = useState(""); // "" = All sites (default)
 const [ending, setEnding] = useState(false);
 const [endMsg, setEndMsg] = useState("");
 const SITE_OPTIONS = [
@@ -19,10 +20,6 @@ const SITE_OPTIONS = [
   { id: "waiapu", name: "Waiapu" },
   { id: "paokahu", name: "Paokahu" },
 ];
-
-const [siteFilter, setSiteFilter] = useState(selectedSite?.id || "");
-
-
 
   // Read session once per render (small + safe)
   const session = useMemo(() => {
@@ -383,6 +380,26 @@ const resp = await fetch(url, {
 
       <div style={{ fontSize: 12, opacity: 0.85, marginBottom: 10 }}>
   <div style={{ marginBottom: 6 }}>
+  <div style={{ marginBottom: 8 }}>
+  <div style={{ marginBottom: 4 }}>
+    <strong>Site filter:</strong>
+  </div>
+  <select
+    value={siteFilter}
+    onChange={(e) => setSiteFilter(e.target.value)}
+    style={{
+      padding: "6px 8px",
+      borderRadius: 8,
+      border: "1px solid #ccc",
+      background: "white",
+      minWidth: 220,
+    }}
+  >
+    <option value="">All sites</option>
+    <option value="waiapu">Waiapu</option>
+    <option value="paokahu">Paokahu</option>
+  </select>
+</div>
     <strong>Active shift:</strong>
   </div>
 
