@@ -288,7 +288,7 @@ const resp = await fetch(url, {
     return Array.isArray(data?.breadcrumbs) ? data.breadcrumbs : [];
   }
   useEffect(() => {
-  const siteId = selectedSite?.id || "";
+  const siteId = siteFilter || "";
 
   let cancelled = false;
 
