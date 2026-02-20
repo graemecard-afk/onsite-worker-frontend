@@ -326,6 +326,8 @@ if (storedLoggedIn && !String(storedEmail).trim()) {
           <OnShiftPage
             siteName={selectedSite?.name}
             userEmail={userEmail}
+            shiftId={shiftId}
+            authToken={authToken}
             shiftStartTimeText={shiftStartTime}
             shiftStartedAtIso={shiftStartedAtIso}
             activeTask={activeTask}

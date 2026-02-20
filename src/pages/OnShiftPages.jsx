@@ -8,10 +8,12 @@ export default function OnShiftPage({
   theme,
   siteName,
   userEmail,
+  shiftId,
+  authToken,
   shiftStartTimeText,
   shiftStartedAtIso,
   onSignOut,
-onSupervisor,
+  onSupervisor,
   activeTask,
   setActiveTask,
   completedTasks,
@@ -191,7 +193,7 @@ useEffect(() => {
     cursor: "pointer",
     opacity: !selectedTask || activeTask ? 0.6 : 1,
   }}
-  onClick={() => {
+  onClick={async () => {
 
     let label = selectedTask;
 
@@ -211,11 +213,49 @@ useEffect(() => {
 
       label = map[selectedTask];
     }
+        if (!shiftId || !authToken) {
+        console.error("Missing shiftId or authToken for /tasks/start");
+        return;
+      }
 
-    setActiveTask({
-      label,
-      startedAt: new Date().toISOString(),
-    });
+      try {
+        const base = import.meta.env.VITE_API_BASE_URL || "";
+        if (!base) throw new Error("Missing VITE_API_BASE_URL");
+
+        const resp = await fetch(`${base.replace(/\/$/, "")}/tasks/start`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authToken}`,
+          },
+          body: JSON.stringify({ shiftId, taskLabel: label }),
+        });
+
+        const data = await resp.json().catch(() => ({}));
+        if (!resp.ok) {
+          throw new Error(data?.error || `Start task failed (${resp.status})`);
+        }
+
+        const taskId = data?.task?.id || data?.id || "";
+        const startedAt =
+          data?.task?.started_at || data?.task?.startedAt || new Date().toISOString();
+
+        if (!taskId) {
+          console.error("Backend /tasks/start did not return task id");
+          return;
+        }
+
+        setActiveTask({
+          id: taskId,
+          label,
+          startedAt,
+        });
+      } catch (e) {
+        console.error("Backend /tasks/start failed:", e);
+        return;
+      }
+
+    
 
     setSelectedTask('');
     setOtherTaskText('');
@@ -238,9 +278,41 @@ useEffect(() => {
     cursor: "pointer",
     opacity: !activeTask ? 0.6 : 1,
   }}
-  onClick={() => {
+  onClick={async () => {
+    if (!activeTask?.id || !authToken) {
+    console.error("Missing taskId or authToken for /tasks/end");
+    return;
+  }
 
-    const endedAt = new Date().toISOString();
+  
+          let endedAt = new Date().toISOString();
+
+      try {
+        const base = import.meta.env.VITE_API_BASE_URL || "";
+        if (!base) throw new Error("Missing VITE_API_BASE_URL");
+
+        const resp = await fetch(`${base.replace(/\/$/, "")}/tasks/end`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authToken}`,
+          },
+          body: JSON.stringify({ taskId: activeTask.id }),
+        });
+
+        const data = await resp.json().catch(() => ({}));
+        if (!resp.ok) {
+          throw new Error(data?.error || `End task failed (${resp.status})`);
+        }
+
+        endedAt =
+          data?.task?.ended_at ||
+          data?.task?.endedAt ||
+          endedAt;
+      } catch (e) {
+        console.error("Backend /tasks/end failed:", e);
+        return;
+      }
 
     const durationSeconds = Math.floor(
       (new Date(endedAt).getTime() -
