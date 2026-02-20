@@ -327,6 +327,10 @@ const resp = await fetch(url, {
   };
 }, [siteFilter]);
 
+// Clear selected shift when site filter changes (prevents cross-site confusion)
+useEffect(() => {
+  setSelectedShiftId("");
+}, [siteFilter]);
 
 
   useEffect(() => {
