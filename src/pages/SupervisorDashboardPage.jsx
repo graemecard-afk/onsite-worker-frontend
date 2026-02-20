@@ -325,7 +325,7 @@ const resp = await fetch(url, {
   return () => {
     cancelled = true;
   };
-}, [selectedSite?.id]);
+}, [siteFilter]);
 
 
 
