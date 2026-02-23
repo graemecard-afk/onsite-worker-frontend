@@ -7,10 +7,11 @@ export default function SupervisorDashboardPage({
   onBack,
   onLogout,
 }) {
-  const [apiBreadcrumbs, setApiBreadcrumbs] = useState([]);
-  const [apiError, setApiError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [activeShifts, setActiveShifts] = useState([]);
+const [apiBreadcrumbs, setApiBreadcrumbs] = useState([]);
+const [apiError, setApiError] = useState("");
+const [isLoading, setIsLoading] = useState(false);
+const [activeShifts, setActiveShifts] = useState([]);
+const [recentShifts, setRecentShifts] = useState([]);
 const [selectedShiftId, setSelectedShiftId] = useState("");
 const [siteFilter, setSiteFilter] = useState(""); // "" = All sites (default)
 const [ending, setEnding] = useState(false);
@@ -255,7 +256,31 @@ async function fetchActiveShifts(siteId) {
 
   return Array.isArray(data?.shifts) ? data.shifts : [];
 }
+async function fetchRecentShifts(siteId) {
+  const base = import.meta.env.VITE_API_BASE_URL || "";
+  const token = (session?.authToken || "").trim();
 
+  if (!base) throw new Error("Missing VITE_API_BASE_URL");
+  if (!token) throw new Error("Missing auth token (please log in again)");
+
+  const url = siteId
+    ? `${base.replace(/\/$/, "")}/shifts/recent?siteId=${encodeURIComponent(siteId)}&days=7`
+    : `${base.replace(/\/$/, "")}/shifts/recent?days=7`;
+
+  const resp = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const data = await resp.json().catch(() => ({}));
+
+  if (!resp.ok) {
+    throw new Error(data?.error || `Request failed (${resp.status})`);
+  }
+
+  return Array.isArray(data?.shifts) ? data.shifts : [];
+}
   async function fetchBreadcrumbsOnce(currentShiftId) {
     const base = import.meta.env.VITE_API_BASE_URL || "";
     const token = (session?.authToken || "").trim();
@@ -295,6 +320,7 @@ const resp = await fetch(url, {
   async function run() {
     try {
       const shifts = await fetchActiveShifts(siteId);
+      const recent = await fetchRecentShifts(siteId);
       if (cancelled) return;
 
             // Keep only the most recent active shift per worker_email
@@ -306,8 +332,8 @@ const resp = await fetch(url, {
           return acc;
         }, {})
       );
-
-      setActiveShifts(latestPerWorker);
+setRecentShifts(recent);
+setActiveShifts(latestPerWorker);
 
 
       // If nothing selected yet, auto-pick the newest active shift
@@ -434,7 +460,37 @@ useEffect(() => {
       No active shifts found for this site.
     </div>
   )}
+<div style={{ marginTop: 16 }}>
+  <strong>Recently ended (last 7 days):</strong>
+</div>
 
+{recentShifts.length > 0 ? (
+  <select
+    value={selectedShiftId || ""}
+    onChange={e => setSelectedShiftId(e.target.value)}
+    style={{
+      padding: "6px 8px",
+      borderRadius: 8,
+      border: "1px solid #ccc",
+      background: "white",
+      minWidth: 280,
+      marginTop: 6,
+    }}
+  >
+    <option value="" disabled>
+      Select a recently ended shift…
+    </option>
+    {recentShifts.map(s => (
+      <option key={s.id} value={s.id}>
+        {s.worker_email} — {s.site_id} — {new Date(s.started_at).toLocaleString()}
+      </option>
+    ))}
+  </select>
+) : (
+  <div style={{ fontSize: 12, opacity: 0.7 }}>
+    No recently ended shifts found.
+  </div>
+)}
   <div style={{ fontSize: 11, opacity: 0.6, marginTop: 6 }}>
     Shift ID: {shiftId || "—"}
   </div>
