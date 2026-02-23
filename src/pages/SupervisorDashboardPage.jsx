@@ -12,6 +12,7 @@ const [apiError, setApiError] = useState("");
 const [isLoading, setIsLoading] = useState(false);
 const [activeShifts, setActiveShifts] = useState([]);
 const [recentShifts, setRecentShifts] = useState([]);
+const [recentDays, setRecentDays] = useState(7);
 const [selectedShiftId, setSelectedShiftId] = useState("");
 const [siteFilter, setSiteFilter] = useState(""); // "" = All sites (default)
 const [ending, setEnding] = useState(false);
@@ -256,16 +257,18 @@ async function fetchActiveShifts(siteId) {
 
   return Array.isArray(data?.shifts) ? data.shifts : [];
 }
-async function fetchRecentShifts(siteId) {
+async function fetchRecentShifts(siteId, days) {
   const base = import.meta.env.VITE_API_BASE_URL || "";
   const token = (session?.authToken || "").trim();
 
   if (!base) throw new Error("Missing VITE_API_BASE_URL");
   if (!token) throw new Error("Missing auth token (please log in again)");
 
-  const url = siteId
-    ? `${base.replace(/\/$/, "")}/shifts/recent?siteId=${encodeURIComponent(siteId)}&days=7`
-    : `${base.replace(/\/$/, "")}/shifts/recent?days=7`;
+  const effectiveDays = days || 7;
+
+const url = siteId
+  ? `${base.replace(/\/$/, "")}/shifts/recent?siteId=${encodeURIComponent(siteId)}&days=${effectiveDays}`
+  : `${base.replace(/\/$/, "")}/shifts/recent?days=${effectiveDays}`;
 
   const resp = await fetch(url, {
     headers: {
@@ -320,7 +323,7 @@ const resp = await fetch(url, {
   async function run() {
     try {
       const shifts = await fetchActiveShifts(siteId);
-      const recent = await fetchRecentShifts(siteId);
+      const recent = await fetchRecentShifts(siteId, recentDays);
       if (cancelled) return;
 
             // Keep only the most recent active shift per worker_email
@@ -356,7 +359,7 @@ setActiveShifts(latestPerWorker);
   return () => {
     cancelled = true;
   };
-}, [siteFilter]);
+}, [siteFilter, recentDays]);
 
 // Clear selected shift when site filter changes (prevents cross-site confusion)
 useEffect(() => {
@@ -473,8 +476,27 @@ useEffect(() => {
     borderTop: "2px solid #cfcfcf",
   }}
 />
-<div style={{ marginTop: 16 }}>
-  <strong>Recently ended (last 7 days):</strong>
+<div style={{ 
+  marginTop: 16, 
+  display: "flex", 
+  alignItems: "center", 
+  gap: 10 
+}}>
+  <strong>Recently ended (last {recentDays} days):</strong>
+
+  <input
+    type="number"
+    min="1"
+    max="30"
+    value={recentDays}
+    onChange={e => setRecentDays(Number(e.target.value) || 7)}
+    style={{
+      width: 60,
+      padding: "4px 6px",
+      borderRadius: 6,
+      border: "1px solid #ccc"
+    }}
+  />
 </div>
 
 {recentShifts.length > 0 ? (
