@@ -332,7 +332,12 @@ const resp = await fetch(url, {
           return acc;
         }, {})
       );
-setRecentShifts(recent);
+      console.log("Recent before sort:", recent.map(r => r.ended_at));
+setRecentShifts(
+  [...recent].sort(
+    (a, b) => new Date(b.ended_at) - new Date(a.ended_at)
+  )
+);
 setActiveShifts(latestPerWorker);
 
 
@@ -451,7 +456,7 @@ useEffect(() => {
       </option>
       {activeShifts.map(s => (
         <option key={s.id} value={s.id}>
-          {s.worker_email} — {s.site_id} — {new Date(s.started_at).toLocaleString()}
+          {s.worker_email} — {s.site_id} — Ended: {new Date(s.ended_at).toLocaleString()}
         </option>
       ))}
     </select>
@@ -460,6 +465,14 @@ useEffect(() => {
       No active shifts found for this site.
     </div>
   )}
+  <hr
+  style={{
+    marginTop: 20,
+    marginBottom: 20,
+    border: "none",
+    borderTop: "2px solid #cfcfcf",
+  }}
+/>
 <div style={{ marginTop: 16 }}>
   <strong>Recently ended (last 7 days):</strong>
 </div>
@@ -482,7 +495,7 @@ useEffect(() => {
     </option>
     {recentShifts.map(s => (
       <option key={s.id} value={s.id}>
-        {s.worker_email} — {s.site_id} — {new Date(s.started_at).toLocaleString()}
+        {s.worker_email} — {s.site_id} — Ended: {new Date(s.ended_at).toLocaleString()}
       </option>
     ))}
   </select>
