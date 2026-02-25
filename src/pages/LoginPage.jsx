@@ -30,8 +30,10 @@ export default function LoginPage({ onLogin }) {
 
   return (
     <main style={{ maxWidth: "360px", margin: "0 auto" }}>
-      <h2>Contractor Login</h2>
-
+      <h2 style={{ textAlign: "center", marginBottom: "1rem", lineHeight: 1.3 }}>
+  <div>Takiuru Kaimahi Kirimana</div>
+  <div>Contractor Login</div>
+</h2>
       <form
         onSubmit={async (e) => {
           e.preventDefault();
@@ -76,7 +78,8 @@ export default function LoginPage({ onLogin }) {
             cursor: "pointer",
           }}
         >
-          Log in
+          <div>Takiuru</div>
+          <div>Log in</div>
         </button>
 
         <button
@@ -120,7 +123,8 @@ export default function LoginPage({ onLogin }) {
             cursor: "pointer",
           }}
         >
-          Register
+<div>Rēhita</div>
+ <div>Register</div>
         </button>
 
         <div style={{ marginTop: "1rem", fontSize: "0.9rem" }}>
