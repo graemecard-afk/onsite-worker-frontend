@@ -144,7 +144,51 @@ async function downloadCsvForSelectedShift() {
     setEndMsg(`CSV download failed: ${e?.message || String(e)}`);
   }
 }
+async function downloadGeoJsonForSelectedShift() {
+  const currentShiftId = (shiftId || "").trim();
+  const base = import.meta.env.VITE_API_BASE_URL || "";
+  const token = (session?.authToken || "").trim();
 
+  if (!base) {
+    setEndMsg("Missing VITE_API_BASE_URL");
+    return;
+  }
+  if (!token) {
+    setEndMsg("Missing auth token (please log in again)");
+    return;
+  }
+  if (!currentShiftId) {
+    setEndMsg("No shift selected.");
+    return;
+  }
+
+  const url = `${base.replace(/\/$/, "")}/admin/shifts/track.geojson?shiftId=${encodeURIComponent(
+    currentShiftId
+  )}`;
+
+  try {
+    setEndMsg("");
+    const resp = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (!resp.ok) {
+      const text = await resp.text().catch(() => "");
+      throw new Error(text || `HTTP ${resp.status}`);
+    }
+
+    const blob = await resp.blob();
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `shift-${currentShiftId}.geojson`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(a.href);
+  } catch (e) {
+    setEndMsg(`GeoJSON download failed: ${e?.message || String(e)}`);
+  }
+}
 async function refreshActiveShiftsNow() {
   const siteId = selectedSite?.id;
   if (!siteId) {
@@ -558,7 +602,20 @@ useEffect(() => {
 >
   Download CSV
 </button>
-
+<button
+  onClick={downloadGeoJsonForSelectedShift}
+  disabled={!shiftId}
+  style={{
+    padding: "8px 10px",
+    borderRadius: 8,
+    border: "1px solid #ccc",
+    cursor: !shiftId ? "not-allowed" : "pointer",
+    opacity: !shiftId ? 0.6 : 1,
+    fontWeight: 600,
+  }}
+>
+  Download Track (GeoJSON)
+</button>
   {endMsg ? (
     <span style={{ fontSize: 12, opacity: 0.8 }}>{endMsg}</span>
   ) : null}
