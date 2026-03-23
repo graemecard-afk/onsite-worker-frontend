@@ -366,7 +366,7 @@ const resp = await fetch(url, {
 
   async function run() {
     try {
-      const shifts = await fetchActiveShifts(siteId);
+      const shifts = await fetchActiveShifts(siteId).catch(() => []);
       const recent = await fetchRecentShifts(siteId, recentDays);
       if (cancelled) return;
 
