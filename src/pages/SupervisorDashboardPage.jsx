@@ -531,7 +531,7 @@ useEffect(() => {
   <input
     type="number"
     min="1"
-    max="30"
+    max="56"
     value={recentDays}
     onChange={e => setRecentDays(Number(e.target.value) || 7)}
     style={{
