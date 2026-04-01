@@ -208,9 +208,9 @@ async function refreshActiveShiftsNow() {
 
     setActiveShifts(latestPerWorker);
 
-    if (shifts.length > 0 && !selectedShiftId) {
-      setSelectedShiftId(shifts[0].id);
-    }
+    if (supervisorView === "active" && shifts.length > 0 && !selectedShiftId) {
+  setSelectedShiftId(shifts[0].id);
+}
   } catch (e) {
     setEndMsg(`Refresh failed: ${e?.message || String(e)}`);
   }
@@ -389,9 +389,9 @@ setActiveShifts(latestPerWorker);
 
 
       // If nothing selected yet, auto-pick the newest active shift
-      if (!selectedShiftId && shifts.length > 0) {
-        setSelectedShiftId(shifts[0].id);
-      }
+      if (supervisorView === "active" && !selectedShiftId && shifts.length > 0) {
+  setSelectedShiftId(shifts[0].id);
+}
     } catch (e) {
       // Non-fatal: we can still show local breadcrumbs
       console.error("Fetch active shifts failed:", e);
